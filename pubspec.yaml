@@ -1,0 +1,59 @@
+name: nour_app
+description: "Nour - Personal Life Companion"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.10.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Design
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.3.3
+  flutter_svg: ^2.0.10+1
+  percent_indicator: ^4.2.3
+  lottie: ^3.1.2
+
+  # State Management & Logic
+  flutter_riverpod: ^2.6.1
+  intl: ^0.19.0
+
+  # Storage & Database
+  sqflite: ^2.4.2
+  path_provider: ^2.1.5
+  shared_preferences: ^2.5.5
+
+  # Hardware, Network & Features
+  flutter_local_notifications: ^17.2.4
+  audioplayers: ^6.7.1
+  http: ^1.2.0 # ✨ API se live time lane ke liye add kiya
+  image_picker: ^1.2.2
+  record: ^6.2.1
+  local_auth: ^3.0.1
+  signature: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1 # ✨ Naya App Icon Package
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icon/ # ✨ Yahan teri icon file hogi
+
+# ✨ APP ICON CONFIGURATION ✨
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/app_icon.png" 
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"

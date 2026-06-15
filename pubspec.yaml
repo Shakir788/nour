@@ -30,11 +30,13 @@ dependencies:
   # Hardware, Network & Features
   flutter_local_notifications: ^17.2.4
   audioplayers: ^6.7.1
-  http: ^1.2.0 # ✨ API se live time lane ke liye add kiya
+  http: ^1.2.0 # ✨ API se live time lane ke liye
   image_picker: ^1.2.2
   record: ^6.2.1
   local_auth: ^3.0.1
   signature: ^6.3.0
+  url_launcher: ^6.3.2
+  timezone: ^0.9.4 # ✨ ADDED: Exact Adhan timing ke liye bohot zaroori
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +49,9 @@ flutter:
 
   assets:
     - assets/icon/ # ✨ Yahan teri icon file hogi
+    - assets/lulu/ # ✨ Lulu cat parts
+    - assets/audio/ # ✨ Saari Islamic audio files yahan se load hongi
+    - assets/images/ # ✨ ADDED: Bismillah PNG aur baaki nayi images ke liye
 
 # ✨ APP ICON CONFIGURATION ✨
 flutter_launcher_icons:

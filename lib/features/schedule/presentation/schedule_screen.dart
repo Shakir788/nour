@@ -9,7 +9,6 @@ import '../../../core/utils/cat_behavior_helper.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/premium_background.dart';
 import 'schedule_provider.dart';
-import 'lulu_cat_widget.dart';
 
 class ScheduleScreen extends ConsumerStatefulWidget {
   const ScheduleScreen({super.key});
@@ -19,41 +18,36 @@ class ScheduleScreen extends ConsumerStatefulWidget {
 }
 
 class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProviderStateMixin {
-  // Teeno parts ke alag animation controllers
-  late final AnimationController _headAnimController;
-  late final AnimationController _tailAnimController;
-  late final AnimationController _bodyAnimController;
   late final AudioPlayer _audioPlayer;
+
+  // Cat Animation
+  late final AnimationController _catPulseController;
 
   @override
   void initState() {
     super.initState();
-    _headAnimController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _tailAnimController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
-    _bodyAnimController = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
     _audioPlayer = AudioPlayer();
+    
+    // Smooth breathing animation for Lulu cat
+    _catPulseController = AnimationController(
+      vsync: this, 
+      duration: const Duration(milliseconds: 2000)
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
-    _headAnimController.dispose();
-    _tailAnimController.dispose();
-    _bodyAnimController.dispose();
     _audioPlayer.dispose();
+    _catPulseController.dispose();
     super.dispose();
   }
 
-  // ✨ Phase 3 Real Interaction Logic: Pet specific parts & play sounds
+  // ✨ Real Interaction Logic: Play sound and show message
   Future<void> _handleCatPet(String behavior, String meowType) async {
     final random = Random();
 
-    if (behavior == 'head') {
-      _headAnimController.forward().then((_) => _headAnimController.reverse());
-    } else if (behavior == 'tail') {
-      _tailAnimController.forward().then((_) => _tailAnimController.reverse());
-    } else if (behavior == 'body') {
-      _bodyAnimController.forward().then((_) => _bodyAnimController.reverse());
-    }
+    // Give a quick pulse feedback when touched
+    _catPulseController.forward(from: 0.8).then((_) => _catPulseController.repeat(reverse: true));
 
     try {
       final sounds = CatBehaviorHelper.behaviorSounds[meowType] ?? CatBehaviorHelper.behaviorSounds['happy']!;
@@ -204,19 +198,33 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
     );
   }
 
-  // ✨ Lulu cat widget — fully code-drawn, no image assets needed
+  // ✨ New Single Image Lulu Cat Widget ✨
   Widget _buildLuluCat() {
-    // ⚠️ FIXED: Changed from LuluCatWidget to LuluPetWidget
-    return AnimatedBuilder(
-      animation: Listenable.merge([_headAnimController, _bodyAnimController, _tailAnimController]),
-      builder: (context, child) {
-        return LuluPetWidget(
-          width: 300,
-          height: 120,
-          onTap: () => _handleCatPet('head', 'happy'), 
-          onFedHappy: () => _handleCatPet('body', 'happy'),
-        );
-      },
+    return GestureDetector(
+      onTap: () => _handleCatPet('head', 'happy'),
+      onDoubleTap: () => _handleCatPet('body', 'happy'),
+      child: ScaleTransition(
+        scale: Tween<double>(begin: 0.97, end: 1.02).animate(
+          CurvedAnimation(parent: _catPulseController, curve: Curves.easeInOut),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryPink.withOpacity(0.1),
+                blurRadius: 30,
+                spreadRadius: 2,
+              )
+            ],
+          ),
+          child: Image.asset(
+            'assets/lulu/lulu.png', // The beautiful static image
+            height: 160,
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
     );
   }
 
@@ -237,12 +245,16 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
               style: TextStyle(fontFamily: 'serif', fontWeight: FontWeight.w800, color: AppTheme.textDark)),
           centerTitle: false,
         ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: AppTheme.primaryPink,
-          elevation: 6,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          onPressed: () => _showAddTaskSheet(context),
-          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        // ✨ FIX: Floating Action Button ko nav bar ke upar uthaya ✨
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 90.0), // 👈 Ye rahi jadoo wali padding
+          child: FloatingActionButton(
+            backgroundColor: AppTheme.primaryPink,
+            elevation: 6,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            onPressed: () => _showAddTaskSheet(context),
+            child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+          ),
         ),
         body: SafeArea(
           child: Column(
@@ -304,7 +316,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
                       )
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(20, 6, 20, 100),
+                        // ✨ FIX: List ke end mein extra space daala taaki last task na dabe ✨
+                        padding: const EdgeInsets.fromLTRB(20, 6, 20, 120), // 👈 Ye raha 120px bottom margin
                         itemCount: tasks.length,
                         itemBuilder: (context, index) {
                           final task = tasks[index];

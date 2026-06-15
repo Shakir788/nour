@@ -10,6 +10,8 @@ import 'package:signature/signature.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../presentation/habit_provider.dart';
 import '../../mood/presentation/mood_provider.dart';
@@ -26,6 +28,10 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   final ImagePicker _picker = ImagePicker();
   final LocalAuthentication auth = LocalAuthentication();
 
+  // ✨ MAGIC DIARY LOGIC (Paging & Dates) ✨
+  final PageController _pageController = PageController(initialPage: 5000); // 5000 is 'Today' (allows endless swiping)
+  DateTime _currentDate = DateTime.now();
+
   bool _isLocked = true;
   bool _authFailed = false;
   int _currentThemeIndex = 0;
@@ -37,20 +43,29 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   bool _isPlaying = false;
   String? _recordedFilePath;
 
-  // ASMR ambience states
+  // ✨ ASMR PLAYER STATES & MEMORY ✨
   final AudioPlayer _asmrPlayer = AudioPlayer();
-  int _asmrIndex = 0; // 0: Off, 1: Rain, 2: Night, 3: Cafe
+  int _asmrIndex = 0; 
+  bool _isAsmrPlaying = false;
+  Duration _asmrDuration = Duration.zero;
+  Duration _asmrPosition = Duration.zero;
+
   final List<String> asmrNames = [
     "Off",
-    "Pluie Douce 🌧️",
-    "Nuit Paisible 🌙",
-    "Café Marocain ☕"
+    "Calme & Sérénité 🍃",
+    "Guérison de l'âme ✨",
+    "Ya Moula 🤲",
+    "Dhikr Rabbi 📿",
+    "Soulagement 🕊️"
   ];
+  
   final List<String> asmrFiles = [
     "",
-    "audio/rain.mp3",
-    "audio/night.mp3",
-    "audio/cafe.mp3",
+    "audio/calm.mp3",
+    "audio/heal.mp3",
+    "audio/moula.mp3",
+    "audio/rabbi.mp3",
+    "audio/relief.mp3",
   ];
 
   // Doodle controller
@@ -77,6 +92,10 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   void initState() {
     super.initState();
     _authenticate();
+    _loadPageData(_currentDate); // Load today's data immediately
+    _initPlayerListeners(); // Initialize player listeners for duration/position
+    _loadPlayerState(); // Load saved music state on app start
+
     _audioPlayer.onPlayerComplete.listen((event) {
       if (mounted) setState(() => _isPlaying = false);
     });
@@ -90,7 +109,160 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
     _audioPlayer.dispose();
     _asmrPlayer.stop();
     _asmrPlayer.dispose();
+    _pageController.dispose();
     super.dispose();
+  }
+
+  // ✨ PLAYER LISTENERS (Tracks real-time music progress) ✨
+  void _initPlayerListeners() {
+    _asmrPlayer.onDurationChanged.listen((d) {
+      if (mounted) setState(() => _asmrDuration = d);
+    });
+
+    _asmrPlayer.onPositionChanged.listen((p) {
+      if (mounted) {
+        setState(() => _asmrPosition = p);
+        _savePlayerState(); // Auto-save position every second
+      }
+    });
+
+    _asmrPlayer.onPlayerComplete.listen((event) {
+      if (mounted) {
+        _playNext(); // Auto play next song when current finishes
+      }
+    });
+  }
+
+  // ✨ LOAD MUSIC STATE FROM MEMORY ✨
+  Future<void> _loadPlayerState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedIndex = prefs.getInt('last_asmr_index') ?? 0;
+    final savedPositionMs = prefs.getInt('last_asmr_position') ?? 0;
+
+    if (savedIndex > 0 && savedIndex < asmrFiles.length) {
+      setState(() {
+        _asmrIndex = savedIndex;
+        _asmrPosition = Duration(milliseconds: savedPositionMs);
+      });
+      // Preload the file without playing automatically
+      await _asmrPlayer.setSource(AssetSource(asmrFiles[_asmrIndex]));
+      await _asmrPlayer.seek(_asmrPosition);
+    }
+  }
+
+  // ✨ SAVE MUSIC STATE TO DISK ✨
+  Future<void> _savePlayerState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('last_asmr_index', _asmrIndex);
+    await prefs.setInt('last_asmr_position', _asmrPosition.inMilliseconds);
+  }
+
+  // ✨ PLAY / PAUSE MUSIC ENGINE ✨
+  Future<void> _toggleAsmrPlay() async {
+    if (_asmrIndex == 0) {
+      _playNext();
+      return;
+    }
+
+    try {
+      if (_isAsmrPlaying) {
+        await _asmrPlayer.pause();
+        setState(() => _isAsmrPlaying = false);
+      } else {
+        await _asmrPlayer.setReleaseMode(ReleaseMode.loop);
+        await _asmrPlayer.play(AssetSource(asmrFiles[_asmrIndex]));
+        await _asmrPlayer.seek(_asmrPosition); // Resume from saved position
+        setState(() => _isAsmrPlaying = true);
+      }
+    } catch (e) {
+      debugPrint("Player Toggle Error: $e");
+    }
+  }
+
+  // ✨ NEXT SONG LOGIC ✨
+  Future<void> _playNext() async {
+    int nextIndex = (_asmrIndex + 1) % asmrFiles.length;
+    if (nextIndex == 0) nextIndex = 1; // Skip the "Off" state
+
+    setState(() {
+      _asmrIndex = nextIndex;
+      _asmrPosition = Duration.zero; // Start from beginning for new song
+    });
+
+    await _asmrPlayer.stop();
+    await _asmrPlayer.setReleaseMode(ReleaseMode.loop);
+    await _asmrPlayer.play(AssetSource(asmrFiles[_asmrIndex]));
+    setState(() => _isAsmrPlaying = true);
+    _savePlayerState();
+  }
+
+  // ✨ FAST FORWARD LOGIC (+10 Seconds) ✨
+  Future<void> _fastForward() async {
+    if (_asmrIndex == 0) return;
+    final newPosition = _asmrPosition + const Duration(seconds: 10);
+    if (newPosition < _asmrDuration) {
+      await _asmrPlayer.seek(newPosition);
+    } else {
+      _playNext();
+    }
+  }
+
+  // ✨ PERMANENT STORAGE FUNCTIONS (Diary Data) ✨
+  String _getDateKey(DateTime date) {
+    return "diary_${DateFormat('yyyy_MM_dd').format(date)}";
+  }
+
+  Future<void> _loadPageData(DateTime date) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedText = prefs.getString(_getDateKey(date)) ?? "";
+    setState(() {
+      _gratitudeController.text = savedText;
+    });
+    ref.read(habitNotifierProvider.notifier).updateGratitude(savedText);
+  }
+
+  Future<void> _savePageData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_getDateKey(_currentDate), _gratitudeController.text);
+    ref.read(habitNotifierProvider.notifier).updateGratitude(_gratitudeController.text);
+  }
+
+  Future<void> _clearCurrentPage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_getDateKey(_currentDate));
+    setState(() {
+      _gratitudeController.clear();
+    });
+    ref.read(habitNotifierProvider.notifier).updateGratitude("");
+  }
+
+  void _showClearConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFFFFFDF2),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Effacer la page ? 📝", style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDark)),
+        content: const Text("Voulez-vous vraiment effacer tout le contenu de cette page ?", style: TextStyle(color: AppTheme.textLight)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              _clearCurrentPage();
+              Navigator.pop(context);
+            },
+            child: const Text("Effacer", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _authenticate() async {
@@ -148,43 +320,6 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
     }
   }
 
-  // ✨ ASMR TOGGLE — NOW ACTUALLY PLAYS AUDIO ✨
-  Future<void> _toggleAsmr() async {
-    final newIndex = (_asmrIndex + 1) % asmrNames.length;
-
-    try {
-      if (newIndex == 0) {
-        await _asmrPlayer.stop();
-      } else {
-        await _asmrPlayer.stop();
-        await _asmrPlayer.setReleaseMode(ReleaseMode.loop);
-        await _asmrPlayer.play(AssetSource(asmrFiles[newIndex]));
-      }
-      setState(() => _asmrIndex = newIndex);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-            newIndex == 0 ? "Ambiance désactivée 🔇" : "Lecture: ${asmrNames[newIndex]}",
-          ),
-          backgroundColor: AppTheme.primaryPink,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        ));
-      }
-    } catch (e) {
-      debugPrint("ASMR play error: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text("Fichier audio manquant pour ${asmrNames[newIndex]} 🎵"),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        ));
-      }
-    }
-  }
-
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
@@ -196,7 +331,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
     _gratitudeController.text = '${_gratitudeController.text} $sticker';
     _gratitudeController.selection =
         TextSelection.collapsed(offset: _gratitudeController.text.length);
-    ref.read(habitNotifierProvider.notifier).updateGratitude(_gratitudeController.text);
+    _savePageData(); // Save instantly when sticker is added
   }
 
   Future<void> _toggleRecording() async {
@@ -236,7 +371,6 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
     }
   }
 
-  // ✨ NEW: DELETE VOICE NOTE ✨
   Future<void> _deleteVoiceNote(String? dbAudioPath) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -266,8 +400,6 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
 
     if (confirm == true) {
       await _audioPlayer.stop();
-
-      // try to delete the actual file from disk
       try {
         final pathToDelete = _recordedFilePath ?? dbAudioPath;
         if (pathToDelete != null) {
@@ -283,14 +415,6 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
         _recordedFilePath = null;
       });
       ref.read(habitNotifierProvider.notifier).updateAudio('');
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Note vocale supprimée 🗑️"),
-          backgroundColor: AppTheme.textDark,
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
     }
   }
 
@@ -334,8 +458,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
               }
               if (mounted) Navigator.pop(context);
             },
-            child:
-                const Text("Sauvegarder", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text("Sauvegarder", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -345,8 +468,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   void _saveAndShowAffirmation(String? moodType) {
     String affirmation = "Chaque jour est un nouveau départ. Tu fais de l'excellent travail. ✨";
     if (moodType == "Sad") {
-      affirmation =
-          "C'est normal de ne pas être parfaite tous les jours. Respire profondément, Habibati. Demain sera plus doux. 🌧️💖";
+      affirmation = "C'est normal de ne pas être parfaite tous les jours. Respire profondément, Habibati. Demain sera plus doux. 🌧️💖";
     } else if (moodType == "Stressed") {
       affirmation = "Relâche tes épaules. Ferme les yeux une seconde. Tu as le droit de te reposer. 🍃✨";
     } else if (moodType == "Happy") {
@@ -465,12 +587,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
 
     final habits = ref.watch(habitNotifierProvider);
     final currentMood = ref.watch(moodNotifierProvider);
-    final String todayPrompt = dailyPrompts[DateTime.now().day % dailyPrompts.length];
-
-    if (habits != null && _gratitudeController.text != habits.gratitudeText) {
-      _gratitudeController.text = habits.gratitudeText;
-      _gratitudeController.selection = TextSelection.collapsed(offset: _gratitudeController.text.length);
-    }
+    final String todayPrompt = dailyPrompts[_currentDate.day % dailyPrompts.length];
 
     String vibeText = "Vibe du jour: Paisible 🍃";
     if (currentMood?.moodType == "Happy") vibeText = "Vibe du jour: Rayonnante ☀️";
@@ -498,29 +615,23 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
         title: Column(
           children: [
             Text(
-              DateFormat('EEEE', 'fr_FR').format(DateTime.now()),
-              style: const TextStyle(fontFamily: 'serif', fontWeight: FontWeight.w600, color: AppTheme.primaryPink, fontSize: 12),
+              DateFormat('EEEE', 'fr_FR').format(_currentDate).toUpperCase(),
+              style: const TextStyle(fontFamily: 'serif', fontWeight: FontWeight.w600, color: AppTheme.primaryPink, fontSize: 11, letterSpacing: 1.2),
             ),
             Text(
-              "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
+              DateFormat('dd MMMM yyyy', 'fr_FR').format(_currentDate),
               style: const TextStyle(fontFamily: 'serif', fontWeight: FontWeight.bold, color: AppTheme.textDark, fontSize: 18),
             ),
           ],
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: _asmrIndex == 0 ? Colors.white.withOpacity(0.6) : AppTheme.primaryPink.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(_asmrIndex == 0 ? Icons.headphones_outlined : Icons.headphones,
-                  size: 18, color: _asmrIndex == 0 ? AppTheme.textDark : AppTheme.primaryPink),
+          // Trash Icon to erase the specific day's diary entry
+          if (_gratitudeController.text.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent, size: 24),
+              onPressed: _showClearConfirmation,
             ),
-            onPressed: _toggleAsmr,
-          ),
           IconButton(
             icon: Container(
               padding: const EdgeInsets.all(8),
@@ -541,43 +652,50 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
               children: [
                 Positioned.fill(child: CustomPaint(painter: NotebookPainter(lineHeight: 32.0, themeIndex: _currentThemeIndex))),
                 SafeArea(
-                  child: SingleChildScrollView(
+                  child: PageView.builder(
+                    controller: _pageController,
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.only(top: 70, bottom: 120),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (habits.unlockDate != null && habits.unlockDate!.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 65, right: 20, bottom: 16),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(colors: [AppTheme.textDark, AppTheme.textDark.withOpacity(0.85)]),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [BoxShadow(color: AppTheme.textDark.withOpacity(0.25), blurRadius: 10, offset: const Offset(0, 4))],
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.hourglass_bottom_rounded, color: AppTheme.primaryPink, size: 20),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text("Capsule scellée jusqu'au ${habits.unlockDate}",
-                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                    onPageChanged: (index) {
+                      _savePageData(); // Save current page before flipping
+                      setState(() {
+                        _currentDate = DateTime.now().add(Duration(days: index - 5000));
+                      });
+                      _loadPageData(_currentDate); // Load the new page's data
+                    },
+                    itemBuilder: (context, index) {
+                      return SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: EdgeInsets.only(top: 10, bottom: _asmrIndex > 0 ? 180 : 120), // Adjust padding if player is active
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (habits.unlockDate != null && habits.unlockDate!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 65, right: 20, bottom: 16),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(colors: [AppTheme.textDark, AppTheme.textDark.withOpacity(0.85)]),
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [BoxShadow(color: AppTheme.textDark.withOpacity(0.25), blurRadius: 10, offset: const Offset(0, 4))],
                                   ),
-                                ],
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.hourglass_bottom_rounded, color: AppTheme.primaryPink, size: 20),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text("Capsule scellée jusqu'au ${habits.unlockDate}",
+                                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
 
-                        // Vibe tag + ASMR chip
-                        Padding(
-                          padding: const EdgeInsets.only(left: 65, right: 20, bottom: 10),
-                          child: Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              Container(
+                            // Vibe tag
+                            Padding(
+                              padding: const EdgeInsets.only(left: 65, right: 20, bottom: 10),
+                              child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.7),
@@ -586,142 +704,209 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
                                 ),
                                 child: Text(vibeText, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.textLight)),
                               ),
-                              if (_asmrIndex != 0)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryPink.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(20),
+                            ),
+
+                            Padding(
+                              padding: const EdgeInsets.only(left: 65, right: 20, bottom: 10),
+                              child: Text(todayPrompt,
+                                  style: const TextStyle(color: AppTheme.primaryPink, fontWeight: FontWeight.w700, fontStyle: FontStyle.italic, fontSize: 14)),
+                            ),
+
+                            GestureDetector(
+                              onLongPressDown: (_) => setState(() => _isTextRevealed = true),
+                              onLongPressUp: () => setState(() => _isTextRevealed = false),
+                              onLongPressCancel: () => setState(() => _isTextRevealed = false),
+                              child: ImageFiltered(
+                                imageFilter: ImageFilter.blur(sigmaX: applyBlur ? 6.0 : 0.0, sigmaY: applyBlur ? 6.0 : 0.0),
+                                child: TextField(
+                                  controller: _gratitudeController,
+                                  maxLines: null,
+                                  minLines: 5,
+                                  onChanged: (text) => _savePageData(), // Auto Save Trigger when writing
+                                  style: const TextStyle(fontSize: 16, color: Color(0xFF2C3E50), fontFamily: 'serif', fontWeight: FontWeight.w600, height: 32.0 / 16.0),
+                                  decoration: InputDecoration(
+                                    hintText: "Cher journal...",
+                                    hintStyle: TextStyle(color: AppTheme.textDark.withOpacity(0.3), fontStyle: FontStyle.italic),
+                                    border: InputBorder.none,
+                                    contentPadding: const EdgeInsets.only(left: 65, right: 20),
                                   ),
+                                ),
+                              ),
+                            ),
+
+                            if (applyBlur)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 65, right: 20, top: 4),
+                                child: Text("👀 Maintiens pour révéler ton texte secret",
+                                    style: TextStyle(fontSize: 11, color: AppTheme.textLight.withOpacity(0.7), fontStyle: FontStyle.italic)),
+                              ),
+
+                            if (hasVoiceNote)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 65, right: 20, top: 20),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(color: AppTheme.primaryPink.withOpacity(0.25)),
+                                    boxShadow: [BoxShadow(color: AppTheme.primaryPink.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4))],
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   child: Row(
-                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.music_note_rounded, size: 12, color: AppTheme.primaryPink),
-                                      const SizedBox(width: 4),
-                                      Text(asmrNames[_asmrIndex],
-                                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppTheme.primaryPink)),
+                                      CircleAvatar(
+                                        backgroundColor: AppTheme.primaryPink.withOpacity(0.1),
+                                        child: const Icon(Icons.mic_rounded, color: AppTheme.primaryPink),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Expanded(
+                                        child: Text("Note Vocale", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textDark)),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill, color: AppTheme.primaryPink, size: 34),
+                                        onPressed: () => _togglePlayback(habits.audioPath),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                                        onPressed: () => _deleteVoiceNote(habits.audioPath),
+                                      ),
                                     ],
                                   ),
                                 ),
+                              ),
+
+                            if (habits.imagePath != null && habits.imagePath!.isNotEmpty) ...[
+                              const SizedBox(height: 32),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 65, right: 20),
+                                child: Stack(
+                                  children: [
+                                    Transform.rotate(
+                                      angle: -0.02,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 10, offset: const Offset(2, 4))],
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius: BorderRadius.circular(4),
+                                              child: Image.file(File(habits.imagePath!), height: 200, width: double.infinity, fit: BoxFit.cover),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            const Text("Souvenir ✨", style: TextStyle(fontFamily: 'serif', fontStyle: FontStyle.italic, color: Colors.black54)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: -5,
+                                      right: -5,
+                                      child: IconButton(
+                                        onPressed: () => ref.read(habitNotifierProvider.notifier).updateImage(''),
+                                        icon: Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: const BoxDecoration(color: Colors.black87, shape: BoxShape.circle),
+                                          child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
                             ],
-                          ),
+                          ],
                         ),
+                      );
+                    },
+                  ),
+                ),
 
-                        Padding(
-                          padding: const EdgeInsets.only(left: 65, right: 20, bottom: 10),
-                          child: Text(todayPrompt,
-                              style: const TextStyle(color: AppTheme.primaryPink, fontWeight: FontWeight.w700, fontStyle: FontStyle.italic, fontSize: 14)),
-                        ),
-
-                        GestureDetector(
-                          onLongPressDown: (_) => setState(() => _isTextRevealed = true),
-                          onLongPressUp: () => setState(() => _isTextRevealed = false),
-                          onLongPressCancel: () => setState(() => _isTextRevealed = false),
-                          child: ImageFiltered(
-                            imageFilter: ImageFilter.blur(sigmaX: applyBlur ? 6.0 : 0.0, sigmaY: applyBlur ? 6.0 : 0.0),
-                            child: TextField(
-                              controller: _gratitudeController,
-                              maxLines: null,
-                              minLines: 5,
-                              onChanged: (text) => ref.read(habitNotifierProvider.notifier).updateGratitude(text),
-                              style: const TextStyle(fontSize: 16, color: Color(0xFF2C3E50), fontFamily: 'serif', fontWeight: FontWeight.w600, height: 32.0 / 16.0),
-                              decoration: InputDecoration(
-                                hintText: "Cher journal...",
-                                hintStyle: TextStyle(color: AppTheme.textDark.withOpacity(0.3), fontStyle: FontStyle.italic),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.only(left: 65, right: 20),
-                              ),
-                            ),
+                // ✨ MINI PLAYER UI (Appears above bottom bar when music is selected) ✨
+                if (_asmrIndex > 0)
+                  Positioned(
+                    bottom: 85,
+                    left: 16,
+                    right: 16,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.85),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppTheme.primaryPink.withOpacity(0.2)),
                           ),
-                        ),
-
-                        if (applyBlur)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 65, right: 20, top: 4),
-                            child: Text("👀 Maintiens pour révéler ton texte secret",
-                                style: TextStyle(fontSize: 11, color: AppTheme.textLight.withOpacity(0.7), fontStyle: FontStyle.italic)),
-                          ),
-
-                        if (hasVoiceNote)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 65, right: 20, top: 20),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: AppTheme.primaryPink.withOpacity(0.25)),
-                                boxShadow: [BoxShadow(color: AppTheme.primaryPink.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, 4))],
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              child: Row(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
                                 children: [
-                                  CircleAvatar(
-                                    backgroundColor: AppTheme.primaryPink.withOpacity(0.1),
-                                    child: const Icon(Icons.mic_rounded, color: AppTheme.primaryPink),
+                                  const Icon(Icons.music_note_rounded, color: AppTheme.primaryPink, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      asmrNames[_asmrIndex],
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppTheme.textDark),
+                                    ),
+                                  ),
+                                  // Play/Pause Button
+                                  IconButton(
+                                    icon: Icon(_isAsmrPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded, color: AppTheme.primaryPink, size: 28),
+                                    onPressed: _toggleAsmrPlay,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
                                   const SizedBox(width: 12),
-                                  const Expanded(
-                                    child: Text("Note Vocale", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textDark)),
-                                  ),
+                                  // Fast Forward (+10s)
                                   IconButton(
-                                    icon: Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill, color: AppTheme.primaryPink, size: 34),
-                                    onPressed: () => _togglePlayback(habits.audioPath),
+                                    icon: const Icon(Icons.fast_forward_rounded, color: AppTheme.textLight, size: 22),
+                                    onPressed: _fastForward,
+                                    tooltip: "Avancer de 10s",
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
+                                  const SizedBox(width: 12),
+                                  // Next Song
                                   IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                                    onPressed: () => _deleteVoiceNote(habits.audioPath),
+                                    icon: const Icon(Icons.skip_next_rounded, color: AppTheme.textLight, size: 22),
+                                    onPressed: _playNext,
+                                    tooltip: "Musique suivante",
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
-
-                        if (habits.imagePath != null && habits.imagePath!.isNotEmpty) ...[
-                          const SizedBox(height: 32),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 65, right: 20),
-                            child: Stack(
-                              children: [
-                                Transform.rotate(
-                                  angle: -0.02,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 10, offset: const Offset(2, 4))],
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(4),
-                                          child: Image.file(File(habits.imagePath!), height: 200, width: double.infinity, fit: BoxFit.cover),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        const Text("Souvenir ✨", style: TextStyle(fontFamily: 'serif', fontStyle: FontStyle.italic, color: Colors.black54)),
-                                      ],
-                                    ),
-                                  ),
+                              const SizedBox(height: 4),
+                              // ✨ CORRECTED: Interactive Progress Slider ✨
+                              SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  trackHeight: 2,
+                                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 4),
+                                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+                                  activeTrackColor: AppTheme.primaryPink,
+                                  inactiveTrackColor: AppTheme.primaryPink.withOpacity(0.15),
+                                  thumbColor: AppTheme.primaryPink,
                                 ),
-                                Positioned(
-                                  top: -5,
-                                  right: -5,
-                                  child: IconButton(
-                                    onPressed: () => ref.read(habitNotifierProvider.notifier).updateImage(''),
-                                    icon: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: const BoxDecoration(color: Colors.black87, shape: BoxShape.circle),
-                                      child: const Icon(Icons.close, color: Colors.white, size: 16),
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
+                                child: Slider(
+                                  value: _asmrPosition.inMilliseconds.toDouble().clamp(0.0, _asmrDuration.inMilliseconds.toDouble() > 0 ? _asmrDuration.inMilliseconds.toDouble() : 1.0),
+                                  max: _asmrDuration.inMilliseconds.toDouble() > 0 ? _asmrDuration.inMilliseconds.toDouble() : 1.0,
+                                  onChanged: (value) async {
+                                    final newPos = Duration(milliseconds: value.toInt());
+                                    await _asmrPlayer.seek(newPos);
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
 
                 // ✨ BOTTOM TOOLBAR ✨
                 Align(
@@ -756,6 +941,14 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
                             ),
                           ),
                           Container(width: 1, height: 28, color: Colors.black12, margin: const EdgeInsets.symmetric(horizontal: 6)),
+                          
+                          // MUSIC SELECTOR ICON (Inside Toolbar)
+                          IconButton(
+                            icon: Icon(_asmrIndex == 0 ? Icons.headphones_outlined : Icons.headphones, color: _asmrIndex == 0 ? AppTheme.textLight : AppTheme.primaryPink),
+                            onPressed: _playNext,
+                            tooltip: "Changer d'ambiance",
+                          ),
+                          
                           IconButton(
                             icon: const Icon(Icons.hourglass_bottom_rounded, color: AppTheme.textLight),
                             onPressed: _pickUnlockDate,

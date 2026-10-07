@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'core/theme/app_theme.dart';
+
+// ✨ Saari Screens ke Imports
+import 'features/home/presentation/home_dashboard_screen.dart'; // NAYA HOME DASHBOARD
 import 'features/schedule/presentation/schedule_screen.dart';
-import 'features/prayer/presentation/prayer_screen.dart'; 
+import 'features/prayer/presentation/prayer_screen.dart';
 import 'features/quran/presentation/quran_screen.dart';
 import 'features/habits/presentation/life_screen.dart';
 
@@ -13,35 +17,37 @@ class MainNav extends StatefulWidget {
 }
 
 class _MainNavState extends State<MainNav> {
+  // ✨ App khulte hi default index 0 (Home Dashboard) chalega
   int _currentIndex = 0;
 
-  // Saari screens apni sahi jagah par hain
+  // ✨ Screens ki nayi list (Order wise)
   final List<Widget> _screens = [
-    const ScheduleScreen(),
-    const PrayerScreen(), // 🕌 2nd Tab: Prayers Tracker
-    const QuranScreen(),  // 📖 3rd Tab: Quran Tracker
-    const LifeScreen(),   // ✨ 4th Tab: Life (Habits & Mood Tracker)
+    const HomeDashboardScreen(), // 🏠 0. Naya Home Dashboard
+    const ScheduleScreen(),      // 📅 1. Purani Routine Screen
+    const PrayerScreen(),        // 🕌 2. Prayers Screen
+    const QuranScreen(),         // 📖 3. Quran Screen
+    const LifeScreen(),          // 💛 4. Life/Journal Screen
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ✨ extendBody ko true kiya taaki background (jaise diary ka panna) nav bar ke peeche tak smooth dikhe
-      extendBody: true, 
+      backgroundColor: AppColors.background,
+      extendBody: true,
       body: _screens[_currentIndex],
-      
-      // ✨ Nayi Floating Premium Nav Bar
+
       bottomNavigationBar: SafeArea(
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surfaceElevated,
             borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: AppColors.goldBorder, width: 1),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryPink.withOpacity(0.15), // Soft glowing shadow
+                color: AppColors.gold.withValues(alpha: 0.18),
                 blurRadius: 20,
-                spreadRadius: 5,
+                spreadRadius: 2,
                 offset: const Offset(0, 8),
               ),
             ],
@@ -55,33 +61,43 @@ class _MainNavState extends State<MainNav> {
                   _currentIndex = index;
                 });
               },
-              type: BottomNavigationBarType.fixed, 
-              backgroundColor: Colors.white,
-              selectedItemColor: AppTheme.primaryPink,
-              unselectedItemColor: AppTheme.textLight.withOpacity(0.6),
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
-              elevation: 0, // Default elevation zero kyunki humne Container mein pyara shadow lagaya hai
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: Colors.transparent,
+              selectedItemColor: AppColors.gold,
+              unselectedItemColor: AppColors.textMuted,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.5),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 10),
+              elevation: 0,
               items: const [
+                // 🏠 TAB 0: HOME
                 BottomNavigationBarItem(
-                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.favorite_border)),
-                  activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.favorite)),
-                  label: 'Routine', 
+                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(CupertinoIcons.home)),
+                  activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(CupertinoIcons.house_fill)),
+                  label: 'Home',
                 ),
+                // 📅 TAB 1: ROUTINE
                 BottomNavigationBarItem(
-                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.mosque_outlined)), 
+                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(CupertinoIcons.square_list)),
+                  activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(CupertinoIcons.square_list_fill)),
+                  label: 'Routine',
+                ),
+                // 🕌 TAB 2: PRAYERS
+                BottomNavigationBarItem(
+                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.mosque_outlined)),
                   activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.mosque)),
-                  label: 'Prières', // ✨ French touch
+                  label: 'Prayers',
                 ),
+                // 📖 TAB 3: QURAN
                 BottomNavigationBarItem(
-                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.menu_book_outlined)),
-                  activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.menu_book)),
-                  label: 'Coran', // ✨ French touch
+                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(CupertinoIcons.book)),
+                  activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(CupertinoIcons.book_solid)),
+                  label: 'Quran',
                 ),
+                // 💛 TAB 4: LIFE / JOURNAL
                 BottomNavigationBarItem(
-                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.water_drop_outlined)),
-                  activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(Icons.water_drop)),
-                  label: 'Vie', // ✨ French touch
+                  icon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(CupertinoIcons.heart)),
+                  activeIcon: Padding(padding: EdgeInsets.only(bottom: 4), child: Icon(CupertinoIcons.heart_solid)),
+                  label: 'Life',
                 ),
               ],
             ),

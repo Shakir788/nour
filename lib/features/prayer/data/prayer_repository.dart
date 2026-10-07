@@ -1,5 +1,37 @@
 import '../../../core/database/database_helper.dart';
-import '../domain/prayer_model.dart';
+
+// ✨ Is file ke andar hi model define kar diya taaki import ka koi lafda hi na ho!
+class PrayerModel {
+  final int? id;
+  final String prayerName;
+  final String date;
+  final bool isCompleted;
+
+  PrayerModel({
+    this.id,
+    required this.prayerName,
+    required this.date,
+    this.isCompleted = false,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'prayer_name': prayerName,
+      'date': date,
+      'is_completed': isCompleted ? 1 : 0,
+    };
+  }
+
+  factory PrayerModel.fromMap(Map<String, dynamic> map) {
+    return PrayerModel(
+      id: map['id'],
+      prayerName: map['prayer_name'],
+      date: map['date'],
+      isCompleted: map['is_completed'] == 1,
+    );
+  }
+}
 
 class PrayerRepository {
   final dbHelper = DatabaseHelper.instance;
@@ -21,7 +53,7 @@ class PrayerRepository {
   }
 
   Future<void> _seedDailyPrayers(String date) async {
-    final prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghreb', 'Isha'];
+    final prayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']; // ✨ Maghreb ko Maghrib kar diya Global standard ke hisab se
     for (var prayer in prayers) {
       await insertPrayer(PrayerModel(prayerName: prayer, date: date));
     }

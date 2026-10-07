@@ -1,12 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../chat/nour_screen.dart';
+
 import '../../../core/theme/app_theme.dart';
-import '../../mood/presentation/mood_provider.dart';
-import '../presentation/habit_provider.dart';
+import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/premium_background.dart';
-import 'journal_screen.dart'; // Nayi Diary Screen
-import 'galaxy_screen.dart';  // ✨ Naya: Galaxy (Aasmaan) Screen
+import '../presentation/habit_provider.dart';
+import '../../prayer/presentation/prayer_provider.dart';
+import '../../chat/nour_screen.dart'; // Naya import for Nour AI chat
+import 'wellness_provider.dart';
+import 'journal_screen.dart';
 
 class LifeScreen extends ConsumerStatefulWidget {
   const LifeScreen({super.key});
@@ -16,7 +22,7 @@ class LifeScreen extends ConsumerStatefulWidget {
 }
 
 class _LifeScreenState extends ConsumerState<LifeScreen> {
-  static const int focusDuration = 1800; 
+  static const int focusDuration = 1800;
   int _timeLeft = focusDuration;
   bool _isRunning = false;
   Timer? _timer;
@@ -42,7 +48,10 @@ class _LifeScreenState extends ConsumerState<LifeScreen> {
 
   void _stopTimer() {
     _timer?.cancel();
-    setState(() { _isRunning = false; _timeLeft = focusDuration; });
+    setState(() {
+      _isRunning = false;
+      _timeLeft = focusDuration;
+    });
   }
 
   String get timerString {
@@ -51,243 +60,611 @@ class _LifeScreenState extends ConsumerState<LifeScreen> {
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
-  // Premium Card Style
-  BoxDecoration get _cardDecoration => BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(24),
-    boxShadow: [
-      BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
-    ],
-  );
+  int _prayerDaysThisWeek(WidgetRef ref) {
+    final notifier = ref.read(prayersProvider.notifier);
+    ref.watch(prayersProvider);
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+    int fullDays = 0;
+    for (int i = 0; i < 7; i++) {
+      final day = weekStart.add(Duration(days: i));
+      if (day.isAfter(now)) break;
+      if (notifier.getPrayerForDate(day).completionPercentage == 1.0) fullDays++;
+    }
+    return fullDays;
+  }
 
   @override
   Widget build(BuildContext context) {
     final habits = ref.watch(habitNotifierProvider);
-    final currentMood = ref.watch(moodNotifierProvider);
+    final wellness = ref.watch(wellnessProvider);
+    final wellnessNotifier = ref.read(wellnessProvider.notifier);
+    final prayerDays = _prayerDaysThisWeek(ref);
 
     return PremiumBackground(
       child: Scaffold(
-        backgroundColor: Colors.transparent, 
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          toolbarHeight: 80,
-          title: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Équilibre et Vie 💧', style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.textDark, fontSize: 26, letterSpacing: -0.5)),
-              Text('Prenez soin de vous (Take care of yourself)', style: TextStyle(fontSize: 13, color: AppTheme.primaryPink, fontWeight: FontWeight.w600)),
-            ],
-          ),
-          actions: [
-            // ✨ FEATURE 5: THE GALAXY BUTTON ✨
-            IconButton(
-              icon: const Icon(Icons.nights_stay_rounded, color: AppTheme.textDark, size: 28),
-              tooltip: "Ton Ciel Étoilé",
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const GalaxyScreen()),
-                );
-              },
+        backgroundColor: Colors.transparent,
+        // NAYA: Islamic background image low opacity ke sath
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.15,
+                child: Image.asset(
+                  'assets/images/islamic_bg.png',
+                  fit: BoxFit.cover,
+                  color: Colors.black.withValues(alpha: 0.5),
+                  colorBlendMode: BlendMode.darken,
+                ),
+              ),
             ),
-            const SizedBox(width: 8),
-          ],
-        ),
-        body: habits == null
-            ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryPink))
-            : ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            SafeArea(
+              child: Column(
                 children: [
-                  
-                  // --- 1. MOOD TRACKER ---
-                  const Text('Comment vous sentez-vous ?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textDark)),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-                    decoration: _cardDecoration,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildMoodEmoji('Heureux', '😊', currentMood?.moodType),  
-                        _buildMoodEmoji('Calme', '😌', currentMood?.moodType),    
-                        _buildMoodEmoji('Fatigué', '😴', currentMood?.moodType),  
-                        _buildMoodEmoji('Triste', '😢', currentMood?.moodType),   
-                        _buildMoodEmoji('Stressé', '😫', currentMood?.moodType),  
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // --- 2. DAILY HABITS ---
-                  const Text('Habitudes Quotidiennes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textDark)),
-                  const SizedBox(height: 12),
-                  
-                  // Water Tile
-                  Container(
-                    decoration: _cardDecoration,
-                    padding: const EdgeInsets.all(8),
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), shape: BoxShape.circle),
-                        child: const Icon(Icons.water_drop_rounded, color: Colors.blue, size: 24),
-                      ),
-                      title: const Text("Consommation d'Eau", style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textDark, fontSize: 15)),
-                      subtitle: Text('${habits.waterIntakeMl} ml aujourd\'hui', style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.textLight, fontSize: 13)),
-                      trailing: GestureDetector(
-                        onTap: () => ref.read(habitNotifierProvider.notifier).addWater(250),
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: const BoxDecoration(color: AppTheme.primaryPink, shape: BoxShape.circle),
-                          child: const Icon(Icons.add, color: Colors.white, size: 24),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // Gym Tile
-                  Container(
-                    decoration: _cardDecoration,
-                    padding: const EdgeInsets.all(8),
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: Colors.deepPurple.withOpacity(0.1), shape: BoxShape.circle),
-                        child: const Icon(Icons.fitness_center_rounded, color: Colors.deepPurple, size: 24),
-                      ),
-                      title: const Text('Séance de Sport', style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textDark, fontSize: 15)),
-                      subtitle: Text(habits.gymAttended ? 'Terminé 💪' : 'Pas encore', style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.textLight, fontSize: 13)),
-                      trailing: Switch(
-                        value: habits.gymAttended,
-                        activeColor: Colors.white,
-                        activeTrackColor: AppTheme.primaryPink,
-                        onChanged: (val) => ref.read(habitNotifierProvider.notifier).toggleGym(val),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // --- 3. PROJECT TIMER ---
-                  Container(
-                    decoration: _cardDecoration,
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(color: AppTheme.primaryPink.withOpacity(0.1), shape: BoxShape.circle),
-                          child: const Icon(Icons.laptop_mac_rounded, size: 32, color: AppTheme.primaryPink),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text('Concentration Projet (30 Min)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.textDark)),
-                        const SizedBox(height: 4),
-                        Text('Sessions terminées aujourd\'hui : ${habits.projectSessions}', style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.primaryPink, fontSize: 12)),
-                        const SizedBox(height: 20),
-                        Text(
-                          timerString,
-                          style: const TextStyle(fontSize: 64, fontWeight: FontWeight.w900, color: AppTheme.textDark, letterSpacing: -2),
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _isRunning ? Colors.grey.shade200 : AppTheme.primaryPink,
-                              foregroundColor: _isRunning ? AppTheme.textDark : Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              elevation: 0,
-                            ),
-                            onPressed: _isRunning ? _stopTimer : _startTimer,
-                            child: Text(_isRunning ? 'Arrêter' : 'Démarrer (Start)', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Wellness', style: AppTextStyles.displayMedium.copyWith(fontSize: 28)),
+                            const SizedBox(height: 4),
+                            Text('Take care of yourself', style: AppTextStyles.bodyMedium),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  Expanded(
+                    child: habits == null
+                        ? Center(child: CircularProgressIndicator(color: AppColors.gold))
+                        : ListView(
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                            children: [
+                              GlassCard(
+                                padding: const EdgeInsets.all(20),
+                                opacity: 0.4,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(CupertinoIcons.sparkles, color: AppColors.gold, size: 22),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            "Don't forget to stay hydrated today.",
+                                            style: AppTextStyles.bodyLarge.copyWith(fontSize: 14),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 14),
+                                      child: Divider(color: AppColors.divider, thickness: 1),
+                                    ),
+                                    Text(
+                                      '"Allah does not burden a soul beyond that it can bear."',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontStyle: FontStyle.italic,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.goldLight,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text('Surah Al-Baqarah (2:286)', style: AppTextStyles.caption),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 20),
 
-                  // --- 4. NEW JOURNAL ENTRY BUTTON ---
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const JournalScreen()),
-                      );
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFFFFF0F5), Colors.white]),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: AppTheme.primaryPink.withOpacity(0.3), width: 1.5),
-                        boxShadow: [BoxShadow(color: AppTheme.primaryPink.withOpacity(0.1), blurRadius: 15, offset: const Offset(0, 5))],
-                      ),
-                      padding: const EdgeInsets.all(24),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: const BoxDecoration(color: AppTheme.primaryPink, shape: BoxShape.circle),
-                            child: const Icon(Icons.auto_stories_rounded, color: Colors.white, size: 24),
+                              GestureDetector(
+                                onTap: () => Navigator.push(
+                                    context, MaterialPageRoute(builder: (context) => const JournalScreen())),
+                                child: GlassCard(
+                                  padding: const EdgeInsets.all(20),
+                                  opacity: 0.6,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(14),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: AppColors.goldGradient,
+                                        ),
+                                        child: Icon(CupertinoIcons.book_fill,
+                                            color: AppColors.background, size: 26),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text('PERSONAL SPACE',
+                                                style: AppTextStyles.caption
+                                                    .copyWith(color: AppColors.goldLight, letterSpacing: 1)),
+                                            const SizedBox(height: 4),
+                                            Text('My Private Journal', style: AppTextStyles.bodyLarge),
+                                          ],
+                                        ),
+                                      ),
+                                      Icon(CupertinoIcons.chevron_right,
+                                          color: AppColors.gold.withOpacity(0.6), size: 18),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+
+                              Text('This Week', style: AppTextStyles.bodyLarge.copyWith(fontSize: 18)),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  _StatTile(label: 'Prayers', value: '$prayerDays/7'),
+                                  const SizedBox(width: 10),
+                                  _StatTile(label: 'Fasts', value: '${wellnessNotifier.fastsThisWeek}/7'),
+                                  const SizedBox(width: 10),
+                                  _StatTile(
+                                    label: 'Sadaqah',
+                                    value: wellnessNotifier.sadaqahThisMonth > 0
+                                        ? wellnessNotifier.sadaqahThisMonth.toStringAsFixed(0)
+                                        : '0',
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 28),
+
+                              Text('Dhikr Counter', style: AppTextStyles.bodyLarge.copyWith(fontSize: 18)),
+                              const SizedBox(height: 12),
+                              GlassCard(
+                                padding: const EdgeInsets.all(24),
+                                opacity: 0.4,
+                                child: Column(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: wellnessNotifier.incrementDhikr,
+                                      child: Container(
+                                        width: 140,
+                                        height: 140,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: AppColors.gold.withOpacity(0.4), width: 3),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.gold.withOpacity(0.2),
+                                              blurRadius: 24,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          '${wellness.dhikrCount}',
+                                          style: AppTextStyles.displayLarge.copyWith(
+                                              fontSize: 40, color: AppColors.gold),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text('Tap to count', style: AppTextStyles.caption),
+                                    const SizedBox(height: 16),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        TextButton(
+                                          onPressed: wellnessNotifier.cycleDhikrTarget,
+                                          child: Text('Target: ${wellness.dhikrTarget}',
+                                              style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w600)),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        TextButton(
+                                          onPressed: wellnessNotifier.resetDhikr,
+                                          child: Text('Reset',
+                                              style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Sadaqah Tracker', style: AppTextStyles.bodyLarge.copyWith(fontSize: 18)),
+                                  TextButton.icon(
+                                    onPressed: () => _showAddSadaqahSheet(context, wellnessNotifier),
+                                    icon: Icon(CupertinoIcons.add, size: 18, color: AppColors.gold),
+                                    label: Text('Add', style: TextStyle(color: AppColors.gold)),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              GlassCard(
+                                padding: const EdgeInsets.all(20),
+                                opacity: 0.4,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('This month', style: AppTextStyles.caption),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      wellnessNotifier.sadaqahThisMonth.toStringAsFixed(0),
+                                      style: AppTextStyles.displayMedium.copyWith(color: AppColors.gold),
+                                    ),
+                                    if (wellness.sadaqahEntries.isNotEmpty) ...[
+                                      const SizedBox(height: 14),
+                                      Divider(color: AppColors.divider),
+                                      const SizedBox(height: 8),
+                                      ...wellness.sadaqahEntries.reversed.take(3).map(
+                                            (e) => Padding(
+                                              padding: const EdgeInsets.symmetric(vertical: 4),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    e.note.isEmpty ? 'Sadaqah' : e.note,
+                                                    style: AppTextStyles.bodyMedium,
+                                                  ),
+                                                  Text(e.amount.toStringAsFixed(0),
+                                                      style: TextStyle(
+                                                          color: AppColors.textPrimary,
+                                                          fontWeight: FontWeight.w600)),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+
+                              Text('Fasting Tracker', style: AppTextStyles.bodyLarge.copyWith(fontSize: 18)),
+                              const SizedBox(height: 4),
+                              Text('Mon & Thu are marked as Sunnah fasting days',
+                                  style: AppTextStyles.caption),
+                              const SizedBox(height: 12),
+                              GlassCard(
+                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                                opacity: 0.4,
+                                child: _FastingWeekRow(wellnessNotifier: wellnessNotifier),
+                              ),
+                              const SizedBox(height: 28),
+
+                              Text('Daily Habits', style: AppTextStyles.bodyLarge.copyWith(fontSize: 18)),
+                              const SizedBox(height: 12),
+                              GlassCard(
+                                padding: const EdgeInsets.all(20),
+                                opacity: 0.4,
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                              color: AppColors.gold.withOpacity(0.15),
+                                              borderRadius: BorderRadius.circular(16)),
+                                          child: Icon(CupertinoIcons.drop_fill, color: AppColors.gold, size: 28),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text('Hydration', style: AppTextStyles.bodyLarge),
+                                              const SizedBox(height: 4),
+                                              Text('${habits.waterIntakeMl} / 2000 ml',
+                                                  style: AppTextStyles.bodyMedium),
+                                            ],
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () => ref.read(habitNotifierProvider.notifier).addWater(250),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.gold,
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            child: Icon(CupertinoIcons.add, color: AppColors.background, size: 24),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: LinearProgressIndicator(
+                                        value: (habits.waterIntakeMl / 2000).clamp(0.0, 1.0),
+                                        backgroundColor: AppColors.textMuted.withOpacity(0.15),
+                                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold),
+                                        minHeight: 8,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              GlassCard(
+                                padding: const EdgeInsets.all(20),
+                                opacity: 0.4,
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                          color: AppColors.gold.withOpacity(0.15),
+                                          borderRadius: BorderRadius.circular(16)),
+                                      child: Icon(Icons.fitness_center_rounded, color: AppColors.gold, size: 28),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Workout Session', style: AppTextStyles.bodyLarge),
+                                          const SizedBox(height: 4),
+                                          Text(habits.gymAttended ? 'Goal reached' : 'To do today',
+                                              style: AppTextStyles.bodyMedium),
+                                        ],
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () =>
+                                          ref.read(habitNotifierProvider.notifier).toggleGym(!habits.gymAttended),
+                                      child: AnimatedContainer(
+                                        duration: const Duration(milliseconds: 300),
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: habits.gymAttended ? AppColors.gold : Colors.transparent,
+                                          border: Border.all(
+                                              color: habits.gymAttended
+                                                  ? AppColors.gold
+                                                  : AppColors.textMuted.withOpacity(0.4),
+                                              width: 2),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: habits.gymAttended
+                                            ? Icon(Icons.check, color: AppColors.background, size: 20)
+                                            : null,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+
+                              GlassCard(
+                                padding: const EdgeInsets.all(28),
+                                opacity: 0.4,
+                                child: Column(
+                                  children: [
+                                    Text('Focus Mode', style: AppTextStyles.bodyLarge.copyWith(fontSize: 18)),
+                                    const SizedBox(height: 8),
+                                    Text('${habits.projectSessions} sessions completed',
+                                        style: AppTextStyles.bodyMedium),
+                                    const SizedBox(height: 28),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
+                                      decoration: BoxDecoration(
+                                        color: _isRunning
+                                            ? AppColors.gold.withOpacity(0.1)
+                                            : AppColors.surfaceElevated.withOpacity(0.4),
+                                        borderRadius: BorderRadius.circular(28),
+                                        border: Border.all(
+                                            color: _isRunning ? AppColors.gold.withOpacity(0.5) : Colors.transparent),
+                                      ),
+                                      child: Text(
+                                        timerString,
+                                        style: TextStyle(
+                                          fontSize: 48,
+                                          fontWeight: FontWeight.w800,
+                                          color: _isRunning ? AppColors.gold : AppColors.textPrimary,
+                                          letterSpacing: -1,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 28),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        onPressed: _isRunning ? _stopTimer : _startTimer,
+                                        child: Text(_isRunning ? 'Pause' : 'Start Focus'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 80), // Thoda space for FAB
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Mon Journal Intime", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppTheme.textDark)),
-                                SizedBox(height: 4),
-                                Text("Ouvrir pour écrire tes pensées ✨", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textLight)),
-                              ],
-                            ),
-                          ),
-                          const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.primaryPink, size: 18),
-                        ],
-                      ),
-                    ),
                   ),
-
-                  const SizedBox(height: 60),
                 ],
               ),
+            ),
+          ],
+        ),
+        // NAYA: Floating Action Button for Nour AI
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => NourScreen()),
+            );
+          },
+          backgroundColor: Colors.indigoAccent,
+          elevation: 6,
+          child: const Icon(CupertinoIcons.sparkles, color: Colors.white, size: 28),
+        ),
       ),
     );
   }
 
-  Widget _buildMoodEmoji(String label, String emoji, String? selectedMood) {
-    String englishType = label;
-    if(label == 'Heureux') englishType = 'Happy';
-    if(label == 'Calme') englishType = 'Calm';
-    if(label == 'Fatigué') englishType = 'Tired';
-    if(label == 'Triste') englishType = 'Sad';
-    if(label == 'Stressé') englishType = 'Stressed';
+  void _showAddSadaqahSheet(BuildContext context, WellnessNotifier notifier) {
+    final amountController = TextEditingController();
+    final noteController = TextEditingController();
 
-    final isSelected = englishType == selectedMood;
-    
-    return GestureDetector(
-      onTap: () => ref.read(moodNotifierProvider.notifier).setMood(englishType),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryPink : Colors.transparent,
-          borderRadius: BorderRadius.circular(20), // Vertical pill shape
-        ),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Add Sadaqah', style: AppTextStyles.displayMedium.copyWith(fontSize: 20)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: amountController,
+                keyboardType: TextInputType.number,
+                style: AppTextStyles.bodyLarge,
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  labelStyle: TextStyle(color: AppColors.textMuted),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.divider),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.gold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: noteController,
+                style: AppTextStyles.bodyLarge,
+                decoration: InputDecoration(
+                  labelText: 'Note (optional)',
+                  labelStyle: TextStyle(color: AppColors.textMuted),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.divider),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.gold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final amount = double.tryParse(amountController.text) ?? 0;
+                    if (amount > 0) {
+                      notifier.addSadaqah(amount, noteController.text.trim());
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text('Save'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final String label;
+  final String value;
+  const _StatTile({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GlassCard(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        opacity: 0.4,
         child: Column(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 28)),
-            const SizedBox(height: 8),
-            Text(label, style: TextStyle(
-              fontSize: 11, 
-              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, 
-              color: isSelected ? Colors.white : AppTheme.textLight
-            )),
+            Text(value,
+                style: AppTextStyles.bodyLarge.copyWith(fontSize: 18, color: AppColors.gold)),
+            const SizedBox(height: 4),
+            Text(label, style: AppTextStyles.caption),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FastingWeekRow extends StatelessWidget {
+  final WellnessNotifier wellnessNotifier;
+  const _FastingWeekRow({required this.wellnessNotifier});
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final weekStart = now.subtract(Duration(days: now.weekday - 1));
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: List.generate(7, (i) {
+        final day = weekStart.add(Duration(days: i));
+        final isSunnahDay = day.weekday == DateTime.monday || day.weekday == DateTime.thursday;
+        final isFasted = wellnessNotifier.isFastedOn(day);
+        final isFuture = day.isAfter(now);
+
+        return GestureDetector(
+          onTap: isFuture ? null : () => wellnessNotifier.toggleFast(day),
+          child: Opacity(
+            opacity: isFuture ? 0.35 : 1,
+            child: Column(
+              children: [
+                Text(DateFormat('E').format(day).substring(0, 1),
+                    style: AppTextStyles.caption),
+                const SizedBox(height: 6),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isFasted ? AppColors.gold : Colors.transparent,
+                    border: Border.all(
+                      color: isFasted
+                          ? AppColors.gold
+                          : (isSunnahDay
+                              ? AppColors.gold.withOpacity(0.5)
+                              : AppColors.textMuted.withOpacity(0.3)),
+                      width: isSunnahDay && !isFasted ? 1.5 : 1,
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: isFasted
+                      ? Icon(Icons.check, size: 18, color: AppColors.background)
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
     );
   }
 }

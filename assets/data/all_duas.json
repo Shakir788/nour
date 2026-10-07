@@ -1,0 +1,688 @@
+{
+  "duas": [
+    {
+      "category": "Emotions",
+      "title": "Feeling Sad or Depressed",
+      "emoji": "😔",
+      "arabic": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ، وَغَلَبَةِ الرِّجَالِ",
+      "transliteration": "Allahumma inni a'udhu bika minal-hammi wal-hazan, wal-'ajzi wal-kasal, wal-bukhli wal-jubn, wa dhala'id-dayni, wa ghalabatir-rijal.",
+      "meaning": "O Allah, I seek refuge in You from anxiety and sorrow, weakness and laziness, miserliness and cowardice, the burden of debts and from being overpowered by men.",
+      "reference": "Sahih Al-Bukhari 2893"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Overwhelmed or Helpless",
+      "emoji": "🤯",
+      "arabic": "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ",
+      "transliteration": "Ya Hayyu Ya Qayyum, bi-rahmatika astaghith.",
+      "meaning": "O Ever-Living One, O Self-Sustaining One, by Your mercy I seek assistance.",
+      "reference": "Jami' At-Tirmidhi 3524"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Anxious or Stressed",
+      "emoji": "😰",
+      "arabic": "حَسْبُنَا اللَّهُ وَنِعْمَ الْوَكِيلُ",
+      "transliteration": "Hasbunallah wa ni'mal-Wakeel.",
+      "meaning": "Sufficient for us is Allah, and [He is] the best Disposer of affairs.",
+      "reference": "Surah Ali 'Imran 3:173"
+    },
+    {
+      "category": "Emotions",
+      "title": "Dealing with a Hardship",
+      "emoji": "😓",
+      "arabic": "اللَّهُمَّ لَا سَهْلَ إِلَّا مَا جَعَلْتَهُ سَهْلًا، وَأَنْتَ تَجْعَلُ الْحَزْنَ إِذَا شِئْتَ سَهْلًا",
+      "transliteration": "Allahumma la sahla illa ma ja'altahu sahlan, wa anta taj'alul-hazna idha shi'ta sahlan.",
+      "meaning": "O Allah, there is no ease except in that which You have made easy, and You make the difficulty, if You wish, easy.",
+      "reference": "Sahih Ibn Hibban 974"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Heartbroken",
+      "emoji": "💔",
+      "arabic": "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ، اللَّهُمَّ أْجُرْنِي فِي مُصِيبَتِي وَأَخْلِفْ لِي خَيْرًا مِنْهَا",
+      "transliteration": "Inna lillahi wa inna ilayhi raji'un. Allahumma ujurni fi musibati wa akhlif li khairan minha.",
+      "meaning": "Indeed we belong to Allah, and indeed to Him we will return. O Allah, reward me in my affliction and replace it for me with something better.",
+      "reference": "Sahih Muslim 918"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Angry",
+      "emoji": "😡",
+      "arabic": "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
+      "transliteration": "A'udhu billahi minash-shaytanir-rajeem.",
+      "meaning": "I seek refuge with Allah from the accursed Satan.",
+      "reference": "Sahih Al-Bukhari 6115"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Lonely or Isolated",
+      "emoji": "🥺",
+      "arabic": "رَبِّ لَا تَذَرْنِي فَرْدًا وَأَنتَ خَيْرُ الْوَارِثِينَ",
+      "transliteration": "Rabbi la tadharni fardan wa anta khayrul warithin.",
+      "meaning": "My Lord, do not leave me alone [with no heir], while You are the best of inheritors.",
+      "reference": "Surah Al-Anbiya 21:89"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Sick or Weak",
+      "emoji": "🤒",
+      "arabic": "اللَّهُمَّ رَبَّ النَّاسِ أَذْهِبِ الْبَأْسَ، اشْفِ أَنْتَ الشَّافِي، لَا شِفَاءَ إِلَّا شِفَاؤُكَ، شِفَاءً لَا يُغَادِرُ سَقَمًا",
+      "transliteration": "Allahumma Rabban-nasi, adhibil-ba'sa, ishkfi antash-Shafi, la shifa'a illa shifa'uka, shifa'an la yughadiru saqaman.",
+      "meaning": "O Allah, Lord of mankind, remove the hardship. Heal, You are the Healer. There is no healing except Your healing, a healing that leaves no illness behind.",
+      "reference": "Sahih Al-Bukhari 5743"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Scared or Fearful",
+      "emoji": "😨",
+      "arabic": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",
+      "transliteration": "A'udhu bikalimatillahit-tammati min sharri ma khalaq.",
+      "meaning": "I seek refuge in the Perfect Words of Allah from the evil of what He has created.",
+      "reference": "Sahih Muslim 2708"
+    },
+    {
+      "category": "Emotions",
+      "title": "Seeking Forgiveness (Tawbah)",
+      "emoji": "💧",
+      "arabic": "أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ الَّذِي لَا إِلَهَ إِلَّا هُوَ الْحَيَّ الْقَيُّومَ وَأَتُوبُ إِلَيْهِ",
+      "transliteration": "Astaghfirullahal-'Azimal-ladhi la ilaha illa Huwal-Hayyal-Qayyuma wa atubu ilayh.",
+      "meaning": "I seek the forgiveness of Allah the Almighty, whom there is none worthy of worship except Him, the Living, the Sustainer of all, and I repent to Him.",
+      "reference": "Jami' At-Tirmidhi 3577"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Confused (Seeking Guidance)",
+      "emoji": "🧭",
+      "arabic": "اللَّهُمَّ اهْدِنِي وَسَدِّدْنِي",
+      "transliteration": "Allahummah-dini wa saddidni.",
+      "meaning": "O Allah, direct me to the right path and make me adhere to the straight path.",
+      "reference": "Sahih Muslim 2725"
+    },
+    {
+      "category": "Emotions",
+      "title": "Lacking Confidence",
+      "emoji": "📉",
+      "arabic": "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِّن لِّسَانِي يَفْقَهُوا قَوْلِي",
+      "transliteration": "Rabbish-rah li sadri, wa yassir li amri, wahlul 'uqdatan min lisani, yafqahu qawli.",
+      "meaning": "My Lord, expand for me my breast [with assurance] and ease for me my task and untie the knot from my tongue that they may understand my speech.",
+      "reference": "Surah Taha 20:25-28"
+    },
+    {
+      "category": "Emotions",
+      "title": "Seeking Patience (Sabr)",
+      "emoji": "🤲",
+      "arabic": "رَبَّنَا أَفْرِغْ عَلَيْنَا صَبْرًا وَتَوَفَّنَا مُسْلِمِينَ",
+      "transliteration": "Rabbana afrigh 'alayna sabran wa tawaffana muslimeen.",
+      "meaning": "Our Lord, pour upon us patience and let us die as Muslims [in submission to You].",
+      "reference": "Surah Al-A'raf 7:126"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Hopeless",
+      "emoji": "🥀",
+      "arabic": "لَا تَقْنَطُوا مِن رَّحْمَةِ اللَّهِ",
+      "transliteration": "La taqnatu min rahmatillah.",
+      "meaning": "Do not despair of the mercy of Allah.",
+      "reference": "Surah Az-Zumar 39:53"
+    },
+    {
+      "category": "Emotions",
+      "title": "Overthinking (Restless Mind)",
+      "emoji": "🧠",
+      "arabic": "اللَّهُمَّ غَارَتِ النُّجُومُ وَهَدَأَتِ الْعُيُونُ وَأَنْتَ حَيٌّ قَيُّومٌ",
+      "transliteration": "Allahumma gharatin-nujumu wa hada'atil-'uyunu wa anta Hayyun Qayyum.",
+      "meaning": "O Allah, the stars have set and the eyes have rested, but You are the Ever-Living, the All-Sustaining.",
+      "reference": "Hisnul Muslim"
+    },
+    {
+      "category": "Emotions",
+      "title": "Protection from Evil Eye",
+      "emoji": "🛡️",
+      "arabic": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّةِ مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ",
+      "transliteration": "A'udhu bikalimatillahit-tammati min kulli shaytanin wa hammatin wa min kulli 'aynin lammatin.",
+      "meaning": "I seek refuge in the perfect words of Allah from every devil and poisonous reptile, and from every envious evil eye.",
+      "reference": "Sahih Al-Bukhari 3371"
+    },
+    {
+      "category": "Emotions",
+      "title": "When Insulted by Someone",
+      "emoji": "🤝",
+      "arabic": "وَإِذَا خَاطَبَهُمُ الْجَاهِلُونَ قَالُوا سَلَامًا",
+      "transliteration": "Wa idha khatabahumul-jahiloona qaloo salaman.",
+      "meaning": "And when the ignorant address them [harshly], they say [words of] peace.",
+      "reference": "Surah Al-Furqan 25:63"
+    },
+    {
+      "category": "Emotions",
+      "title": "Feeling Ungrateful",
+      "emoji": "🙏",
+      "arabic": "رَبِّ أَوْزِعْنِي أَنْ أَشْكُرَ نِعْمَتَكَ الَّتِي أَنْعَمْتَ عَلَيَّ",
+      "transliteration": "Rabbi awzi'ni an ashkura ni'matakal-lati an'amta 'alayya.",
+      "meaning": "My Lord, enable me to be grateful for Your favor which You have bestowed upon me.",
+      "reference": "Surah An-Naml 27:19"
+    },
+    {
+      "category": "Emotions",
+      "title": "Fear of Showing Off (Shirk)",
+      "emoji": "🙈",
+      "arabic": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ أَنْ أُشْرِكَ بِكَ وَأَنَا أَعْلَمُ، وَأَسْتَغْفِرُكَ لِمَا لاَ أَعْلَمُ",
+      "transliteration": "Allahumma inni a'udhu bika an ushrika bika wa ana a'lam, wa astaghfiruka lima la a'lam.",
+      "meaning": "O Allah, I seek refuge in You from knowingly associating partners with You, and I seek Your forgiveness for that which I do not know.",
+      "reference": "Al-Adab Al-Mufrad 716"
+    },
+    {
+      "category": "Emotions",
+      "title": "For Parents (Love & Mercy)",
+      "emoji": "👨‍👩‍👧",
+      "arabic": "رَّبِّ ارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا",
+      "transliteration": "Rabbir-hamhuma kama rabbayani saghira.",
+      "meaning": "My Lord, have mercy upon them as they brought me up [when I was] small.",
+      "reference": "Surah Al-Isra 17:24"
+    },
+    {
+      "category": "Emotions",
+      "title": "Seeking a Good End",
+      "emoji": "🕊️",
+      "arabic": "اللَّهُمَّ إِنِّي أَسْأَلُكَ حُسْنَ الْخَاتِمَةِ",
+      "transliteration": "Allahumma inni as'aluka husnal-khatimah.",
+      "meaning": "O Allah, I ask You for a good end to my life.",
+      "reference": "Hisnul Muslim"
+    },
+    {
+      "category": "Emotions",
+      "title": "Overburdened by Debt",
+      "emoji": "💳",
+      "arabic": "اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ",
+      "transliteration": "Allahummak-fini bihalalika 'an haramika, wa aghnini bifadhlika 'amman siwak.",
+      "meaning": "O Allah, suffice me with what You have allowed instead of what You have forbidden, and make me independent of all others besides You.",
+      "reference": "Jami' At-Tirmidhi 3563"
+    },
+    {
+      "category": "Emotions",
+      "title": "Seeking Good Character",
+      "emoji": "🌟",
+      "arabic": "اللَّهُمَّ اهْدِنِي لِأَحْسَنِ الأَخْلَاقِ لَا يَهْدِي لِأَحْسَنِهَا إِلَّا أَنْتَ",
+      "transliteration": "Allahummah-dini li ahsanil-akhlaq, la yahdi li ahsaniha illa ant.",
+      "meaning": "O Allah, guide me to the best of characters, for none can guide to it except You.",
+      "reference": "Sahih Muslim 771"
+    },
+    {
+      "category": "Emotions",
+      "title": "Protection from Hellfire",
+      "emoji": "🔥",
+      "arabic": "اللَّهُمَّ أَجِرْنِي مِنَ النَّارِ",
+      "transliteration": "Allahumma ajirni minan-nar.",
+      "meaning": "O Allah, save me from the Fire.",
+      "reference": "Sunan Abi Dawud 5079"
+    },
+    {
+      "category": "Emotions",
+      "title": "Seeking Paradise",
+      "emoji": "🌿",
+      "arabic": "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْجَنَّةَ",
+      "transliteration": "Allahumma inni as'alukal-jannah.",
+      "meaning": "O Allah, I ask You for Paradise.",
+      "reference": "Jami' At-Tirmidhi 2572"
+    },
+    {
+      "category": "Emotions",
+      "title": "When Praised by Others",
+      "emoji": "🫣",
+      "arabic": "اللَّهُمَّ لَا تُؤَاخِذْنِي بِمَا يَقُولُونَ، وَاغْفِرْ لِي مَا لَا يَعْلَمُونَ",
+      "transliteration": "Allahumma la tu'akhidhni bima yaqulun, waghfir li ma la ya'lamun.",
+      "meaning": "O Allah, do not hold me to account for what they say, and forgive me for what they do not know.",
+      "reference": "Al-Adab Al-Mufrad 761"
+    },
+    {
+      "category": "Emotions",
+      "title": "Avoiding Fitnah (Trials)",
+      "emoji": "🌪️",
+      "arabic": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ جَهَنَّمَ، وَمِنْ عَذَابِ الْقَبْرِ، وَمِنْ فِتْنَةِ الْمَحْيَا وَالْمَمَاتِ",
+      "transliteration": "Allahumma inni a'udhu bika min 'adhabi jahannam, wa min 'adhabil-qabr, wa min fitnatil-mahya wal-mamat.",
+      "meaning": "O Allah, I seek refuge in You from the punishment of Hell, from the punishment of the grave, and from the trials of life and death.",
+      "reference": "Sahih Muslim 588"
+    },
+    {
+      "category": "Emotions",
+      "title": "Indecisiveness (Need Guidance)",
+      "emoji": "🛤️",
+      "arabic": "اللَّهُمَّ خِرْ لِي وَاخْتَرْ لِي",
+      "transliteration": "Allahumma khir li wakhtar li.",
+      "meaning": "O Allah, choose for me and select for me (what is best).",
+      "reference": "Jami' At-Tirmidhi 3629"
+    },
+    {
+      "category": "Emotions",
+      "title": "When Feeling Forgetful",
+      "emoji": "🤔",
+      "arabic": "رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا",
+      "transliteration": "Rabbana la tu'akhidhna in nasina aw akhta'na.",
+      "meaning": "Our Lord, do not impose blame upon us if we have forgotten or erred.",
+      "reference": "Surah Al-Baqarah 2:286"
+    },
+    {
+      "category": "Emotions",
+      "title": "Seeking Beneficial Knowledge",
+      "emoji": "📚",
+      "arabic": "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا",
+      "transliteration": "Allahumma inni as'aluka 'ilman nafi'an, wa rizqan tayyiban, wa 'amalan mutaqabbalan.",
+      "meaning": "O Allah, I ask You for beneficial knowledge, good provision, and acceptable deeds.",
+      "reference": "Sunan Ibn Majah 925"
+    },
+    {
+      "category": "Emotions",
+      "title": "Overcoming Stinginess",
+      "emoji": "🤲",
+      "arabic": "اللَّهُمَّ قِنِي شُحَّ نَفْسِي",
+      "transliteration": "Allahumma qini shuhha nafsi.",
+      "meaning": "O Allah, protect me from the evils of my own soul's greed.",
+      "reference": "Hisnul Muslim"
+    },
+    {
+      "category": "Emotions",
+      "title": "Increasing Love for Allah",
+      "emoji": "🤍",
+      "arabic": "اللَّهُمَّ إِنِّي أَسْأَلُكَ حُبَّكَ وَحُبَّ مَنْ يُحِبُّكَ",
+      "transliteration": "Allahumma inni as'aluka hubbaka wa hubba man yuhibbuk.",
+      "meaning": "O Allah, I ask You for Your love and the love of those who love You.",
+      "reference": "Jami' At-Tirmidhi 3490"
+    },
+    {
+      "category": "Emotions",
+      "title": "After a Bad Dream",
+      "emoji": "😰",
+      "arabic": "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ غَضَبِهِ وَعِقَابِهِ وَشَرِّ عِبَادِهِ",
+      "transliteration": "A'udhu bikalimatillahit-tamati min ghadabihi wa 'iqabihi wa sharri 'ibadih.",
+      "meaning": "I seek refuge in the perfect words of Allah from His anger, His punishment, and the evil of His slaves.",
+      "reference": "Jami' At-Tirmidhi 3528"
+    },
+    {
+      "category": "Emotions",
+      "title": "Doubt in Faith (Waswasah)",
+      "emoji": "🛡️",
+      "arabic": "آمَنْتُ بِاللَّهِ وَرُسُلِهِ",
+      "transliteration": "Amantu billahi wa rusulih.",
+      "meaning": "I believe in Allah and His Messengers.",
+      "reference": "Sahih Muslim 134"
+    },
+    {
+      "category": "Emotions",
+      "title": "Seeking Protection from Harm",
+      "emoji": "🧿",
+      "arabic": "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+      "transliteration": "Bismillahil-ladhi la yadurru ma'as-mihi shay'un fil-ardi wa la fis-sama'i wa Huwas-Sami'ul-'Alim.",
+      "meaning": "In the Name of Allah with Whose Name there is protection against every kind of harm in the earth or in the heaven, and He is the All-Hearing and All-Knowing.",
+      "reference": "Sunan Abu Dawud 5088"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Waking Up",
+      "emoji": "🌅",
+      "arabic": "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+      "transliteration": "Alhamdu lillahil-ladhi ahyana ba'da ma amatana wa ilaihin-nushur.",
+      "meaning": "All praise is due to Allah, who gave us life after taking it from us and unto Him is the resurrection.",
+      "reference": "Sahih Al-Bukhari 6312"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Before Sleeping",
+      "emoji": "😴",
+      "arabic": "بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا",
+      "transliteration": "Bismika Allahumma amutu wa ahya.",
+      "meaning": "In Your name, O Allah, I die and I live.",
+      "reference": "Sahih Al-Bukhari 6312"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Before an Exam or Hard Task",
+      "emoji": "📝",
+      "arabic": "رَبِّ زِدْنِي عِلْمًا",
+      "transliteration": "Rabbi zidni 'ilma.",
+      "meaning": "My Lord, increase me in knowledge.",
+      "reference": "Surah Taha 20:114"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Leaving the House",
+      "emoji": "🚪",
+      "arabic": "بِسْمِ اللَّهِ، تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ",
+      "transliteration": "Bismillahi, tawakkaltu 'alal-lahi, wa la hawla wa la quwwata illa billah.",
+      "meaning": "In the name of Allah, I place my trust in Allah, and there is no might nor power except with Allah.",
+      "reference": "Sunan Abu Dawud 5095"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Entering the House",
+      "emoji": "🏡",
+      "arabic": "بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا",
+      "transliteration": "Bismillahi walajna, wa bismillahi kharajna, wa 'ala rabbina tawakkalna.",
+      "meaning": "In the name of Allah we enter, in the name of Allah we leave, and upon our Lord we depend.",
+      "reference": "Sunan Abu Dawud 5096"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Before Eating",
+      "emoji": "🍽️",
+      "arabic": "بِسْمِ اللَّهِ",
+      "transliteration": "Bismillah.",
+      "meaning": "In the name of Allah.",
+      "reference": "Sahih Muslim 2017"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Forgetting Bismillah Before Eating",
+      "emoji": "🤦‍♂️",
+      "arabic": "بِسْمِ اللَّهِ فِي أَوَّلِهِ وَآخِرِهِ",
+      "transliteration": "Bismillahi fi awwalihi wa akhirihi.",
+      "meaning": "In the name of Allah, in its beginning and its end.",
+      "reference": "Sunan Abu Dawud 3767"
+    },
+    {
+      "category": "Daily Life",
+      "title": "After Eating",
+      "emoji": "🤲",
+      "arabic": "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنِي هَذَا وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ",
+      "transliteration": "Alhamdulillahil-ladhi at'amani hadha wa razaqanihi min ghairi hawlin minni wa la quwwatin.",
+      "meaning": "All praise is to Allah Who has fed me this and provided it for me without any strength or power on my part.",
+      "reference": "Sunan Abu Dawud 4023"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Entering the Restroom",
+      "emoji": "🚻",
+      "arabic": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ",
+      "transliteration": "Allahumma inni a'udhu bika minal-khubuthi wal-khaba'ith.",
+      "meaning": "O Allah, I seek refuge in You from the male and female evil spirits.",
+      "reference": "Sahih Al-Bukhari 142"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Leaving the Restroom",
+      "emoji": "🚶‍♂️",
+      "arabic": "غُفْرَانَكَ",
+      "transliteration": "Ghufranaka.",
+      "meaning": "I ask Your forgiveness.",
+      "reference": "Sunan Abu Dawud 30"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Traveling / Starting a Journey",
+      "emoji": "🚗",
+      "arabic": "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ، وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ",
+      "transliteration": "Subhanal-ladhi sakhkhara lana hadha wa ma kunna lahu muqrinin. Wa inna ila Rabbina lamunqalibun.",
+      "meaning": "Glory be to Him Who has subjected this to us, and we could not have otherwise subdued it. And indeed we, to our Lord, will [surely] return.",
+      "reference": "Surah Az-Zukhruf 43:13-14"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Getting Dressed",
+      "emoji": "👕",
+      "arabic": "الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا الثَّوْبَ وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ",
+      "transliteration": "Alhamdulillahil-ladhi kasani hadhath-thawba wa razaqanihi min ghairi hawlin minni wa la quwwatin.",
+      "meaning": "All Praise is to Allah Who has clothed me with this garment and provided it for me, with no power nor might from myself.",
+      "reference": "Sunan Abu Dawud 4023"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Looking in the Mirror",
+      "emoji": "🪞",
+      "arabic": "اللَّهُمَّ أَنْتَ حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي",
+      "transliteration": "Allahumma anta hassanta khalqi fahassin khuluqi.",
+      "meaning": "O Allah, just as You have made my physical form beautiful, make my character beautiful as well.",
+      "reference": "Musnad Ahmad 24392"
+    },
+    {
+      "category": "Daily Life",
+      "title": "When it Rains",
+      "emoji": "🌧️",
+      "arabic": "اللَّهُمَّ صَيِّبًا نَافِعًا",
+      "transliteration": "Allahumma sayyiban nafi'an.",
+      "meaning": "O Allah, (bring) beneficial rain clouds.",
+      "reference": "Sahih Al-Bukhari 1032"
+    },
+    {
+      "category": "Daily Life",
+      "title": "After Wudu (Ablution)",
+      "emoji": "✨",
+      "arabic": "أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ",
+      "transliteration": "Ash-hadu an la ilaha illallahu wahdahu la sharika lah, wa ash-hadu anna Muhammadan 'abduhu wa rasuluh.",
+      "meaning": "I bear witness that there is none worthy of worship except Allah alone, without any partners, and I bear witness that Muhammad is His slave and Messenger.",
+      "reference": "Sahih Muslim 234"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Going to the Mosque",
+      "emoji": "🚶",
+      "arabic": "اللَّهُمَّ اجْعَلْ فِي قَلْبِي نُورًا",
+      "transliteration": "Allahummaj-'al fi qalbi nuran.",
+      "meaning": "O Allah, place light in my heart.",
+      "reference": "Sahih Muslim 763"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Entering the Mosque",
+      "emoji": "🕌",
+      "arabic": "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ",
+      "transliteration": "Allahummaf-tah li abwaba rahmatik.",
+      "meaning": "O Allah, open the doors of Your mercy for me.",
+      "reference": "Sahih Muslim 713"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Leaving the Mosque",
+      "emoji": "🕋",
+      "arabic": "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ",
+      "transliteration": "Allahumma inni as'aluka min fadlik.",
+      "meaning": "O Allah, I ask You from Your bounty.",
+      "reference": "Sahih Muslim 713"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Hearing the Adhan",
+      "emoji": "📢",
+      "arabic": "اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ، وَالصَّلَاةِ الْقَائِمَةِ، آتِ مُحَمَّدًا الْوَسِيلَةَ وَالْفَضِيلَةَ، وَابْعَثْهُ مَقَامًا مَحْمُودًا الَّذِي وَعَدْتَهُ",
+      "transliteration": "Allahumma Rabba hadhihid-da'watit-tammah, was-salatil-qa'imah, ati Muhammadanil-wasilata wal-fadhilah, wab'ath-hu maqaman mahmudan alladhi wa'adtah.",
+      "meaning": "O Allah, Lord of this perfect call and established prayer, grant Muhammad the intercession and favor, and raise him to the honored station You have promised him.",
+      "reference": "Sahih Al-Bukhari 614"
+    },
+    {
+      "category": "Daily Life",
+      "title": "When Sneezing",
+      "emoji": "🤧",
+      "arabic": "الْحَمْدُ لِلَّهِ",
+      "transliteration": "Alhamdulillah.",
+      "meaning": "All praise is for Allah.",
+      "reference": "Sahih Al-Bukhari 6224"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Hearing someone Sneeze",
+      "emoji": "🗣️",
+      "arabic": "يَرْحَمُكَ اللَّهُ",
+      "transliteration": "Yarhamukallah.",
+      "meaning": "May Allah have mercy upon you.",
+      "reference": "Sahih Al-Bukhari 6224"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Replying to the Sneezer",
+      "emoji": "🙏",
+      "arabic": "يَهْدِيكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمْ",
+      "transliteration": "Yahdikumullahu wa yuslihu balakum.",
+      "meaning": "May Allah guide you and rectify your condition.",
+      "reference": "Sahih Al-Bukhari 6224"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Entering the Market",
+      "emoji": "🛒",
+      "arabic": "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، يُحْيِي وَيُمِيتُ، وَهُوَ حَيٌّ لَا يَمُوتُ، بِيَدِهِ الْخَيْرُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+      "transliteration": "La ilaha illallahu wahdahu la sharika lah, lahul-mulku wa lahul-hamdu, yuhyi wa yumitu, wa Huwa Hayyun la yamut, bi yadihil-khayru, wa Huwa 'ala kulli shay'in Qadir.",
+      "meaning": "None has the right to be worshipped but Allah alone, without partner. To Him belongs all sovereignty and praise. He gives life and causes death, and He is living and does not die. In His hand is all good and He is over all things omnipotent.",
+      "reference": "Jami' At-Tirmidhi 3428"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Visiting the Sick",
+      "emoji": "🤒",
+      "arabic": "لَا بَأْسَ طَهُورٌ إِنْ شَاءَ اللَّهُ",
+      "transliteration": "La ba'sa tahurun in sha' Allah.",
+      "meaning": "No worry, it is a purification, if Allah wills.",
+      "reference": "Sahih Al-Bukhari 3616"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Breaking Fast (Iftar)",
+      "emoji": "🍽️",
+      "arabic": "ذَهَبَ الظَّمَأُ وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الأَجْرُ إِنْ شَاءَ اللَّهُ",
+      "transliteration": "Dhahabaz-zama'u wabtallatil-'urooqu, wa thabatal-ajru in sha' Allah.",
+      "meaning": "The thirst has gone, the veins are quenched, and the reward is confirmed, if Allah wills.",
+      "reference": "Sunan Abu Dawud 2357"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Hearing Thunder",
+      "emoji": "⚡",
+      "arabic": "سُبْحَانَ الَّذِي يُسَبِّحُ الرَّعْدُ بِحَمْدِهِ وَالْمَلَائِكَةُ مِنْ خِيفَتِهِ",
+      "transliteration": "Subhanal-ladhi yusabbihur-ra'du bihamdihi wal-mala'ikatu min kheefatih.",
+      "meaning": "Glory is to Him Whom thunder and angels extol from fear of Him.",
+      "reference": "Al-Muwatta 51/21"
+    },
+    {
+      "category": "Daily Life",
+      "title": "During Strong Winds",
+      "emoji": "🌬️",
+      "arabic": "اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَهَا وَأَعُوذُ بِكَ مِنْ شَرِّهَا",
+      "transliteration": "Allahumma inni as'aluka khayraha wa a'udhu bika min sharriha.",
+      "meaning": "O Allah, I ask You for its good and seek refuge in You from its evil.",
+      "reference": "Sunan Ibn Majah 3727"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Seeing the New Moon",
+      "emoji": "🌙",
+      "arabic": "اللَّهُمَّ أَهِلَّهُ عَلَيْنَا بِالْيُمْنِ وَالْإِيمَانِ، وَالسَّلَامَةِ وَالْإِسْلَامِ، رَبِّي وَرَبُّكَ اللَّهُ",
+      "transliteration": "Allahumma ahillahu 'alayna bil-yumni wal-iman, was-salamati wal-islam, Rabbi wa Rabbuk-Allah.",
+      "meaning": "O Allah, bring it over us with blessing and faith, and security and Islam. My Lord and your Lord is Allah.",
+      "reference": "Jami' At-Tirmidhi 3451"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Drinking Milk",
+      "emoji": "🥛",
+      "arabic": "اللَّهُمَّ بَارِكْ لَنَا فِيهِ وَزِدْنَا مِنْهُ",
+      "transliteration": "Allahumma barik lana fihi wa zidna minhu.",
+      "meaning": "O Allah, bless it for us and give us more of it.",
+      "reference": "Jami' At-Tirmidhi 3455"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Wearing New Clothes",
+      "emoji": "🛍️",
+      "arabic": "اللَّهُمَّ لَكَ الْحَمْدُ أَنْتَ كَسَوْتَنِيهِ، أَسْأَلُكَ مِنْ خَيْرِهِ وَخَيْرِ مَا صُنِعَ لَهُ",
+      "transliteration": "Allahumma lakal-hamdu anta kasawtanihi, as'aluka min khayrihi wa khayri ma suni'a lah.",
+      "meaning": "O Allah, all praise is to You. You have clothed me with it. I ask You for its good and the good of that for which it was made.",
+      "reference": "Sunan Abu Dawud 4020"
+    },
+    {
+      "category": "Daily Life",
+      "title": "When Someone Offers You a Meal",
+      "emoji": "🍲",
+      "arabic": "اللَّهُمَّ أَطْعِمْ مَنْ أَطْعَمَنِي، وَاسْقِ مَنْ سَقَانِي",
+      "transliteration": "Allahumma at'im man at'amani wasqi man saqani.",
+      "meaning": "O Allah, feed the one who has fed me and give drink to the one who has given me drink.",
+      "reference": "Sahih Muslim 2055"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Seeing Early Fruits",
+      "emoji": "🍎",
+      "arabic": "اللَّهُمَّ بَارِكْ لَنَا فِي ثَمَرِنَا، وَبَارِكْ لَنَا فِي مَدِينَتِنَا",
+      "transliteration": "Allahumma barik lana fi thamarina, wa barik lana fi madinatina.",
+      "meaning": "O Allah, bless our fruits for us, and bless our city for us.",
+      "reference": "Sahih Muslim 1373"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Entering a Graveyard",
+      "emoji": "🪦",
+      "arabic": "السَّلَامُ عَلَيْكُمْ أَهْلَ الدِّيَارِ مِنَ الْمُؤْمِنِينَ وَالْمُسْلِمِينَ",
+      "transliteration": "Assalamu 'alaykum ahlad-diyari minal-mu'minina wal-muslimin.",
+      "meaning": "Peace be upon you, O inhabitants of the dwellings, believers and Muslims.",
+      "reference": "Sahih Muslim 975"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Returning Home (From Journey)",
+      "emoji": "🛬",
+      "arabic": "آيِبُونَ تَائِبُونَ عَابِدُونَ، لِرَبِّنَا حَامِدُونَ",
+      "transliteration": "Ayibuna ta'ibuna 'abiduna, li-Rabbina hamidun.",
+      "meaning": "We are returning, repenting, worshipping, and praising our Lord.",
+      "reference": "Sahih Muslim 1342"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Hearing a Rooster",
+      "emoji": "🐓",
+      "arabic": "اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ",
+      "transliteration": "Allahumma inni as'aluka min fadlik.",
+      "meaning": "O Allah, I ask You from Your bounty.",
+      "reference": "Sahih Al-Bukhari 3303"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Hearing a Dog Bark",
+      "emoji": "🐕",
+      "arabic": "أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ",
+      "transliteration": "A'udhu billahi minash-shaytanir-rajeem.",
+      "meaning": "I seek refuge in Allah from the accursed Satan.",
+      "reference": "Sunan Abi Dawud 5103"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Ending a Meeting / Assembly",
+      "emoji": "👥",
+      "arabic": "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ",
+      "transliteration": "Subhanaka Allahumma wa bihamdika, ash-hadu an la ilaha illa anta, astaghfiruka wa atubu ilayk.",
+      "meaning": "Glory is to You, O Allah, and praise. I bear witness that there is none worthy of worship but You. I seek Your forgiveness and repent to You.",
+      "reference": "Jami' At-Tirmidhi 3433"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Seeing Someone in Affliction",
+      "emoji": "🤕",
+      "arabic": "الْحَمْدُ لِلَّهِ الَّذِي عَافَانِي مِمَّا ابْتَلَاكَ بِهِ، وَفَضَّلَنِي عَلَى كَثِيرٍ مِمَّنْ خَلَقَ تَفْضِيلًا",
+      "transliteration": "Alhamdulillahil-ladhi 'afani mimmab-talaka bihi, wa faddalani 'ala kathirin mimman khalaqa tafdila.",
+      "meaning": "Praise is to Allah Who has spared me what He has afflicted you with, and preferred me greatly above much of what He has created.",
+      "reference": "Jami' At-Tirmidhi 3431"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Looking at the Sky",
+      "emoji": "🌌",
+      "arabic": "رَبَّنَا مَا خَلَقْتَ هَذَا بَاطِلًا سُبْحَانَكَ فَقِنَا عَذَابَ النَّارِ",
+      "transliteration": "Rabbana ma khalaqta hadha batilan subhanaka faqina 'adhaban-nar.",
+      "meaning": "Our Lord, You did not create this aimlessly; exalted are You [above such a thing]; then protect us from the punishment of the Fire.",
+      "reference": "Surah Ali 'Imran 3:191"
+    },
+    {
+      "category": "Daily Life",
+      "title": "For a Newlywed Couple",
+      "emoji": "💍",
+      "arabic": "بَارَكَ اللَّهُ لَكَ، وَبَارَكَ عَلَيْكَ، وَجَمَعَ بَيْنَكُمَا فِي خَيْرٍ",
+      "transliteration": "Barakallahu laka, wa baraka 'alayka, wa jama'a baynakuma fi khayr.",
+      "meaning": "May Allah bless you, and shower His blessings upon you, and join you together in goodness.",
+      "reference": "Sunan Abi Dawud 2130"
+    },
+    {
+      "category": "Daily Life",
+      "title": "Laylatul Qadr (Night of Decree)",
+      "emoji": "✨",
+      "arabic": "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",
+      "transliteration": "Allahumma innaka 'afuwwun tuhibbul-'afwa fa'fu 'anni.",
+      "meaning": "O Allah, You are forgiving and love forgiveness, so forgive me.",
+      "reference": "Jami' At-Tirmidhi 3513"
+    }
+  ]
+}

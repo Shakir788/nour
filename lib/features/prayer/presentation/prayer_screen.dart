@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:percent_indicator/circular_percent_indicator.dart';
+
 import '../../../core/theme/app_theme.dart';
+import '../../../core/services/adhan_scheduler.dart';
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/premium_background.dart';
-import '../../../core/services/adhan_scheduler.dart'; 
 import 'prayer_provider.dart';
 
 final dailyAyahVisibilityProvider = StateProvider<bool>((ref) => true);
@@ -13,20 +16,51 @@ final dailyAyahVisibilityProvider = StateProvider<bool>((ref) => true);
 class PrayerScreen extends ConsumerWidget {
   const PrayerScreen({super.key});
 
+  // Asli error ko samajhne layak message me badalta hai
+  String _friendlyError(Object err) {
+    final e = err.toString();
+    if (e.contains('disabled')) {
+      return 'Phone ka Location (GPS) band hai.\nUse ON karke Retry dabao.';
+    }
+    if (e.contains('permanently denied')) {
+      return 'Location permission band hai.\nSettings me jaakar Allow karo.';
+    }
+    if (e.contains('permission denied')) {
+      return 'Location permission nahi mili.\nRetry dabake Allow karo.';
+    }
+    if (e.contains('no GPS fix')) {
+      return 'GPS fix nahi mila.\nKhuli jagah / khidki ke paas Retry karo.';
+    }
+    if (e.contains('SocketException') ||
+        e.contains('ClientException') ||
+        e.contains('Failed host lookup') ||
+        e.contains('Cleartext')) {
+      return 'Internet ya server se connect nahi ho paya.';
+    }
+    if (e.contains('TimeoutException')) {
+      return 'Server ne time par jawab nahi diya.\nRetry karo.';
+    }
+    return 'Prayer times load nahi ho paye.';
+  }
+
+  void _retry(WidgetRef ref, DateTime activeDate) {
+    ref.invalidate(userLocationProvider);
+    ref.invalidate(cityNameProvider);
+    ref.invalidate(livePrayerTimesProvider(activeDate));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeDate = ref.watch(selectedPrayerDateProvider);
     final prayersNotifier = ref.read(prayersProvider.notifier);
-    ref.watch(prayersProvider); 
-    
+    ref.watch(prayersProvider);
+
     final currentDayData = prayersNotifier.getPrayerForDate(activeDate);
     final completionPercent = currentDayData.completionPercentage;
 
-    // ✨ Fetch Live APIs (Ab ye activeDate ke hisaab se fetch karega)
+    final locationAsync = ref.watch(cityNameProvider);
     final liveTimesAsync = ref.watch(livePrayerTimesProvider(activeDate));
-    final dailyAyahAsync = ref.watch(dailyAyahProvider); 
-    
-    // Ayat card ki visibility state
+    final dailyAyahAsync = ref.watch(dailyAyahProvider);
     final isAyatVisible = ref.watch(dailyAyahVisibilityProvider);
 
     return PremiumBackground(
@@ -35,11 +69,29 @@ class PrayerScreen extends ConsumerWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: const Column(
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Spiritual Journey 🕌', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDark, fontSize: 22)),
-              Text('📍 Morocco Timings', style: TextStyle(fontSize: 12, color: AppTheme.primaryPink, fontWeight: FontWeight.w600)),
+              Text('Divine Connection', style: AppTextStyles.displayMedium),
+              const SizedBox(height: 2),
+              locationAsync.when(
+                loading: () => Text(
+                  '📍 Detecting city...',
+                  style: TextStyle(fontSize: 12, color: AppColors.goldLight),
+                ),
+                error: (_, __) => Text(
+                  '📍 Local Timings',
+                  style: TextStyle(fontSize: 12, color: AppColors.goldLight),
+                ),
+                data: (city) => Text(
+                  '📍 $city',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.goldLight,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -50,7 +102,7 @@ class PrayerScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               child: GlassCard(
                 padding: const EdgeInsets.all(20),
-                opacity: 0.7,
+                opacity: 0.6,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -59,13 +111,15 @@ class PrayerScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            completionPercent == 1.0 ? 'All Prayers Done! ✨' : 'Daily Connection',
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.textDark),
+                            completionPercent == 1.0
+                                ? 'All Prayers Done! ✨'
+                                : 'Daily Connection',
+                            style: AppTextStyles.bodyLarge.copyWith(fontSize: 20),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             'Keep your heart calm and steady with your daily spiritual discipline.',
-                            style: TextStyle(fontSize: 13, color: AppTheme.textDark.withOpacity(0.6), height: 1.4),
+                            style: AppTextStyles.bodyMedium.copyWith(height: 1.4),
                           ),
                         ],
                       ),
@@ -79,47 +133,149 @@ class PrayerScreen extends ConsumerWidget {
                       animateFromLastPercent: true,
                       circularStrokeCap: CircularStrokeCap.round,
                       center: Text(
-                        "${(completionPercent * 100).toInt()}%",
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primaryPink),
+                        '${(completionPercent * 100).toInt()}%',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: AppColors.gold,
+                        ),
                       ),
-                      progressColor: AppTheme.primaryPink,
-                      backgroundColor: AppTheme.primaryPink.withOpacity(0.15),
-                    )
+                      progressColor: AppColors.gold,
+                      backgroundColor: AppColors.textMuted.withValues(alpha: 0.15),
+                    ),
                   ],
                 ),
               ),
             ),
 
-            // 2. Calendar
+            // 2. Horizontal Calendar
             _buildHorizontalCalendar(context, ref, activeDate),
 
-            // 3. Live API Prayers List
+            // 3. Prayer Times List
             Expanded(
               child: liveTimesAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.primaryPink)),
-                error: (err, stack) => Center(child: Text('Internet lag rha hai... 🌸\n$err', textAlign: TextAlign.center)),
+                loading: () => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(color: AppColors.gold),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Fetching your local prayer times...',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                error: (err, stack) => Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(CupertinoIcons.location_slash,
+                            color: Colors.redAccent, size: 40),
+                        const SizedBox(height: 12),
+                        Text(
+                          _friendlyError(err),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 10),
+                        // Asli error (debug ke liye) — chhota text
+                        SelectableText(
+                          err.toString(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () => _retry(ref, activeDate),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.gold,
+                              ),
+                              child: const Text('Retry'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () async {
+                                await Geolocator.openLocationSettings();
+                              },
+                              child: const Text('GPS Settings'),
+                            ),
+                            OutlinedButton(
+                              onPressed: () async {
+                                await Geolocator.openAppSettings();
+                              },
+                              child: const Text('App Permission'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 data: (liveTimes) {
-                  
-                  // ✨ FIX: Riverpod Error solve karne ke liye post frame callback lagaya
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    AdhanScheduler.scheduleDailyAdhan(prayerName: 'Fajr', timeStr: liveTimes['fajr']!, notificationId: 101);
-                    AdhanScheduler.scheduleDailyAdhan(prayerName: 'Dhuhr', timeStr: liveTimes['dhuhr']!, notificationId: 102);
-                    AdhanScheduler.scheduleDailyAdhan(prayerName: 'Asr', timeStr: liveTimes['asr']!, notificationId: 103);
-                    AdhanScheduler.scheduleDailyAdhan(prayerName: 'Maghrib', timeStr: liveTimes['maghrib']!, notificationId: 104);
-                    AdhanScheduler.scheduleDailyAdhan(prayerName: 'Isha', timeStr: liveTimes['isha']!, notificationId: 105);
-                  });
+                  final String formattedActiveDate =
+                      DateFormat('yyyy-MM-dd').format(activeDate);
+
+                  // Adhan schedule karo — sirf aaj ke liye
+                  if (DateFormat('yyyy-MM-dd').format(DateTime.now()) ==
+                      formattedActiveDate) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      AdhanScheduler.scheduleAdhansForNext15Days();
+                    });
+                  }
 
                   final List<Map<String, dynamic>> prayerItems = [
-                    {'name': 'Fajr', 'time': liveTimes['fajr'], 'icon': Icons.wb_twighlight, 'key': 'fajr', 'status': currentDayData.fajr},
-                    {'name': 'Dhuhr', 'time': liveTimes['dhuhr'], 'icon': Icons.wb_sunny_rounded, 'key': 'dhuhr', 'status': currentDayData.dhuhr},
-                    {'name': 'Asr', 'time': liveTimes['asr'], 'icon': Icons.wb_cloudy_rounded, 'key': 'asr', 'status': currentDayData.asr},
-                    {'name': 'Maghrib', 'time': liveTimes['maghrib'], 'icon': Icons.dark_mode_rounded, 'key': 'maghrib', 'status': currentDayData.maghrib},
-                    {'name': 'Isha', 'time': liveTimes['isha'], 'icon': Icons.nightlight_round, 'key': 'isha', 'status': currentDayData.isha},
+                    {
+                      'name': 'Fajr',
+                      'time': liveTimes['fajr'],
+                      'icon': CupertinoIcons.sunrise,
+                      'key': 'fajr',
+                      'status': currentDayData.fajr,
+                    },
+                    {
+                      'name': 'Dhuhr',
+                      'time': liveTimes['dhuhr'],
+                      'icon': CupertinoIcons.sun_max,
+                      'key': 'dhuhr',
+                      'status': currentDayData.dhuhr,
+                    },
+                    {
+                      'name': 'Asr',
+                      'time': liveTimes['asr'],
+                      'icon': CupertinoIcons.cloud_sun,
+                      'key': 'asr',
+                      'status': currentDayData.asr,
+                    },
+                    {
+                      'name': 'Maghrib',
+                      'time': liveTimes['maghrib'],
+                      'icon': CupertinoIcons.sunset,
+                      'key': 'maghrib',
+                      'status': currentDayData.maghrib,
+                    },
+                    {
+                      'name': 'Isha',
+                      'time': liveTimes['isha'],
+                      'icon': CupertinoIcons.moon_stars,
+                      'key': 'isha',
+                      'status': currentDayData.isha,
+                    },
                   ];
 
                   return ListView.builder(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                     itemCount: prayerItems.length,
                     itemBuilder: (context, index) {
                       final item = prayerItems[index];
@@ -127,39 +283,76 @@ class PrayerScreen extends ConsumerWidget {
 
                       return GlassCard(
                         margin: const EdgeInsets.only(bottom: 12),
-                        opacity: isDone ? 0.8 : 0.55,
+                        opacity: isDone ? 0.55 : 0.3,
                         child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 6),
                           leading: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: isDone ? AppTheme.primaryPink.withOpacity(0.15) : Colors.white.withOpacity(0.4),
+                              color: isDone
+                                  ? AppColors.gold.withValues(alpha: 0.2)
+                                  : AppColors.textMuted.withValues(alpha: 0.08),
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDone
+                                    ? AppColors.gold.withValues(alpha: 0.5)
+                                    : Colors.transparent,
+                              ),
                             ),
-                            child: Icon(item['icon'] as IconData, color: isDone ? AppTheme.primaryPink : AppTheme.textLight, size: 24),
+                            child: Icon(
+                              item['icon'] as IconData,
+                              color: isDone ? AppColors.gold : AppColors.textMuted,
+                              size: 24,
+                            ),
                           ),
-                          title: Text(item['name'] as String, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: isDone ? AppTheme.primaryPink : AppTheme.textDark)),
-                          subtitle: Text(item['time'] as String, style: TextStyle(fontSize: 13, color: AppTheme.textDark.withOpacity(0.6), fontWeight: FontWeight.w600)),
+                          title: Text(
+                            item['name'] as String,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: isDone
+                                  ? AppColors.gold
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
+                          subtitle: Text(
+                            item['time'] as String,
+                            style: AppTextStyles.bodyMedium,
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.notifications_active_outlined, color: AppTheme.primaryPink.withOpacity(0.6), size: 22),
+                                icon: Icon(CupertinoIcons.bell,
+                                    color: AppColors.gold.withValues(alpha: 0.6),
+                                    size: 22),
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text('Adhan alert synced for ${item['name']}! 🔔'),
-                                    backgroundColor: AppTheme.primaryPink,
-                                    duration: const Duration(seconds: 2),
-                                  ));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Adhan synced for ${item['name']}! 🔔'),
+                                      backgroundColor: AppColors.surfaceElevated,
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
                                 },
                               ),
                               Transform.scale(
                                 scale: 1.1,
                                 child: Checkbox(
                                   value: isDone,
-                                  activeColor: AppTheme.primaryPink,
+                                  activeColor: AppColors.gold,
+                                  checkColor: AppColors.background,
+                                  side: BorderSide(
+                                      color: AppColors.textMuted
+                                          .withValues(alpha: 0.4),
+                                      width: 2),
                                   shape: const CircleBorder(),
-                                  onChanged: (_) => ref.read(prayersProvider.notifier).togglePrayer(activeDate, item['key'] as String),
+                                  onChanged: (_) => ref
+                                      .read(prayersProvider.notifier)
+                                      .togglePrayer(
+                                          activeDate, item['key'] as String),
                                 ),
                               ),
                             ],
@@ -172,7 +365,7 @@ class PrayerScreen extends ConsumerWidget {
               ),
             ),
 
-            // ✨ 4. Live Ayah Card (Ab hide bhi ho sakta hai!)
+            // 4. Daily Ayah Card
             if (isAyatVisible)
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 5, 24, 20),
@@ -180,55 +373,71 @@ class PrayerScreen extends ConsumerWidget {
                   children: [
                     GlassCard(
                       padding: const EdgeInsets.all(18),
-                      opacity: 0.6,
+                      opacity: 0.55,
                       child: dailyAyahAsync.when(
-                        loading: () => const Center(
+                        loading: () => Center(
                           child: Padding(
-                            padding: EdgeInsets.all(10.0),
-                            child: CircularProgressIndicator(color: AppTheme.primaryPink),
-                          )
+                            padding: const EdgeInsets.all(10.0),
+                            child:
+                                CircularProgressIndicator(color: AppColors.gold),
+                          ),
                         ),
-                        error: (err, stack) => const Text('Could not fetch daily Ayah.', textAlign: TextAlign.center),
+                        error: (err, stack) => Text(
+                          'Could not fetch daily Ayah.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppColors.textPrimary),
+                        ),
                         data: (dailyAyah) => Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Align(
                               alignment: Alignment.topRight,
                               child: InkWell(
-                                onTap: () => ref.invalidate(dailyAyahProvider), 
-                                child: Icon(Icons.refresh_rounded, size: 20, color: AppTheme.primaryPink.withOpacity(0.6)),
+                                onTap: () => ref.invalidate(dailyAyahProvider),
+                                child: Icon(CupertinoIcons.refresh,
+                                    size: 20,
+                                    color: AppColors.gold.withValues(alpha: 0.6)),
                               ),
                             ),
                             Text(
                               dailyAyah['arabic']!,
                               textAlign: TextAlign.center,
-                              textDirection: TextDirection.rtl, // Added text direction for Arabic
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primaryPink, fontFamily: 'serif', height: 1.5),
+                              textDirection: TextDirection.rtl,
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.gold,
+                                fontFamily: AppTextStyles.displayMedium.fontFamily,
+                                height: 1.5,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Text(
                               dailyAyah['translation']!,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.textDark, fontStyle: FontStyle.italic),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               dailyAyah['reference']!,
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppTheme.textDark.withOpacity(0.4), letterSpacing: 0.8),
+                              style: AppTextStyles.caption,
                             ),
                           ],
                         ),
                       ),
                     ),
-                    // ✨ Cross (Close) Button
                     Positioned(
                       top: 5,
                       left: 5,
                       child: IconButton(
-                        icon: Icon(Icons.close_rounded, size: 22, color: AppTheme.textDark.withOpacity(0.4)),
+                        icon: Icon(CupertinoIcons.clear,
+                            size: 22, color: AppColors.textMuted),
                         onPressed: () {
-                          // Isko dabate hi card gayab ho jayega
-                          ref.read(dailyAyahVisibilityProvider.notifier).state = false;
+                          ref.read(dailyAyahVisibilityProvider.notifier).state =
+                              false;
                         },
                       ),
                     ),
@@ -241,7 +450,8 @@ class PrayerScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHorizontalCalendar(BuildContext context, WidgetRef ref, DateTime activeDate) {
+  Widget _buildHorizontalCalendar(
+      BuildContext context, WidgetRef ref, DateTime activeDate) {
     return Container(
       height: 85,
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -251,27 +461,54 @@ class PrayerScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: 14,
         itemBuilder: (context, index) {
-          // Changed to show past 7 days and future 7 days
-          final day = DateTime.now().subtract(const Duration(days: 7)).add(Duration(days: index));
-          final bool isSelected = DateFormat('yyyy-MM-dd').format(day) == DateFormat('yyyy-MM-dd').format(activeDate);
+          final day = DateTime.now()
+              .subtract(const Duration(days: 7))
+              .add(Duration(days: index));
+          final bool isSelected = DateFormat('yyyy-MM-dd').format(day) ==
+              DateFormat('yyyy-MM-dd').format(activeDate);
 
           return GestureDetector(
-            onTap: () => ref.read(selectedPrayerDateProvider.notifier).state = day,
+            onTap: () =>
+                ref.read(selectedPrayerDateProvider.notifier).state = day,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 55,
               margin: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
-                color: isSelected ? AppTheme.primaryPink : Colors.white.withOpacity(0.3),
+                color: isSelected
+                    ? AppColors.gold
+                    : AppColors.surfaceElevated.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: isSelected ? AppTheme.primaryPink : AppTheme.primaryPink.withOpacity(0.1), width: 1.5),
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.gold
+                      : AppColors.textMuted.withValues(alpha: 0.15),
+                  width: 1.5,
+                ),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(DateFormat('E').format(day).toUpperCase(), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isSelected ? Colors.white : AppTheme.textLight)),
+                  Text(
+                    DateFormat('E').format(day).toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          isSelected ? AppColors.background : AppColors.textMuted,
+                    ),
+                  ),
                   const SizedBox(height: 5),
-                  Text(DateFormat('d').format(day), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isSelected ? Colors.white : AppTheme.textDark)),
+                  Text(
+                    DateFormat('d').format(day),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected
+                          ? AppColors.background
+                          : AppColors.textPrimary,
+                    ),
+                  ),
                 ],
               ),
             ),

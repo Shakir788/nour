@@ -1,13 +1,14 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:intl/intl.dart' hide TextDirection; 
+
+import '../../../shared/widgets/premium_drawer.dart'; // ✨ Drawer Import
 import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/greeting_helper.dart';
-import '../../../core/utils/cat_behavior_helper.dart';
+import '../../../core/providers/user_provider.dart'; 
 import '../../../shared/widgets/glass_card.dart';
 import '../../../shared/widgets/premium_background.dart';
+import '../../chat/nour_screen.dart'; 
 import 'schedule_provider.dart';
 
 class ScheduleScreen extends ConsumerStatefulWidget {
@@ -17,62 +18,7 @@ class ScheduleScreen extends ConsumerStatefulWidget {
   ConsumerState<ScheduleScreen> createState() => _ScheduleScreenState();
 }
 
-class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProviderStateMixin {
-  late final AudioPlayer _audioPlayer;
-
-  // Cat Animation
-  late final AnimationController _catPulseController;
-
-  @override
-  void initState() {
-    super.initState();
-    _audioPlayer = AudioPlayer();
-    
-    // Smooth breathing animation for Lulu cat
-    _catPulseController = AnimationController(
-      vsync: this, 
-      duration: const Duration(milliseconds: 2000)
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    _catPulseController.dispose();
-    super.dispose();
-  }
-
-  // ✨ Real Interaction Logic: Play sound and show message
-  Future<void> _handleCatPet(String behavior, String meowType) async {
-    final random = Random();
-
-    // Give a quick pulse feedback when touched
-    _catPulseController.forward(from: 0.8).then((_) => _catPulseController.repeat(reverse: true));
-
-    try {
-      final sounds = CatBehaviorHelper.behaviorSounds[meowType] ?? CatBehaviorHelper.behaviorSounds['happy']!;
-      await _audioPlayer.play(UrlSource(sounds[random.nextInt(sounds.length)]));
-    } catch (e) {
-      debugPrint("Audio Error: $e");
-    }
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          CatBehaviorHelper.behaviorMessages[behavior]![random.nextInt(CatBehaviorHelper.behaviorMessages[behavior]!.length)],
-          style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.textDark, fontSize: 15),
-        ),
-        backgroundColor: behavior == 'tail' ? Colors.redAccent.withOpacity(0.4) : const Color(0xFFFFD1DC),
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
+class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
   void _showAddTaskSheet(BuildContext context) {
     final TextEditingController titleController = TextEditingController();
     String timeStr = '';
@@ -90,6 +36,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
           builder: (context, setSheetState) => GlassCard(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(24),
+            opacity: 0.85,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -97,15 +44,18 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
                   width: 40,
                   height: 5,
                   margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(color: AppTheme.primaryPink.withOpacity(0.3), borderRadius: BorderRadius.circular(10)),
+                  decoration: BoxDecoration(
+                    color: AppColors.textMuted.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                const Text('New Routine ✨', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.textDark)),
+                Text('New Routine', style: AppTextStyles.displayMedium.copyWith(fontSize: 22)),
                 const SizedBox(height: 20),
                 Row(
                   children: [
                     Expanded(
                       child: _buildPickerButton(
-                        icon: Icons.calendar_today_rounded,
+                        icon: CupertinoIcons.calendar,
                         label: pickedDate == null ? 'Date' : DateFormat('dd MMM').format(pickedDate!),
                         onTap: () async {
                           final date = await showDatePicker(
@@ -114,33 +64,54 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
                             firstDate: DateTime.now().subtract(const Duration(days: 30)),
                             lastDate: DateTime.now().add(const Duration(days: 365)),
                             builder: (context, child) => Theme(
-                              data: Theme.of(context).copyWith(
-                                colorScheme: const ColorScheme.light(primary: AppTheme.primaryPink, onPrimary: Colors.white, onSurface: AppTheme.textDark),
+                              data: ThemeData.dark().copyWith(
+                                colorScheme: ColorScheme.dark(
+                                  primary: AppColors.gold,
+                                  onPrimary: AppColors.background,
+                                  surface: AppColors.surfaceElevated,
+                                  onSurface: AppColors.textPrimary,
+                                ),
                               ),
                               child: child!,
                             ),
                           );
-                          if (date != null) setSheetState(() { pickedDate = date; dateStr = DateFormat('yyyy-MM-dd').format(date); });
+                          if (date != null) {
+                            setSheetState(() {
+                              pickedDate = date;
+                              dateStr = DateFormat('yyyy-MM-dd').format(date);
+                            });
+                          }
                         },
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: _buildPickerButton(
-                        icon: Icons.access_time_rounded,
+                        icon: CupertinoIcons.time,
                         label: pickedTime == null ? 'Time' : timeStr,
                         onTap: () async {
                           final time = await showTimePicker(
                             context: context,
                             initialTime: TimeOfDay.now(),
                             builder: (context, child) => Theme(
-                              data: Theme.of(context).copyWith(
-                                colorScheme: const ColorScheme.light(primary: AppTheme.primaryPink, onPrimary: Colors.white, onSurface: AppTheme.textDark),
+                              data: ThemeData.dark().copyWith(
+                                colorScheme: ColorScheme.dark(
+                                  primary: AppColors.gold,
+                                  onPrimary: AppColors.background,
+                                  surface: AppColors.surfaceElevated,
+                                  onSurface: AppColors.textPrimary,
+                                ),
                               ),
                               child: child!,
                             ),
                           );
-                          if (time != null) setSheetState(() { pickedTime = time; timeStr = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}'; });
+                          if (time != null) {
+                            setSheetState(() {
+                              pickedTime = time;
+                              timeStr =
+                                  '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                            });
+                          }
                         },
                       ),
                     ),
@@ -149,12 +120,14 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
                 const SizedBox(height: 16),
                 TextField(
                   controller: titleController,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: AppTextStyles.bodyLarge,
                   decoration: InputDecoration(
-                    hintText: 'Plan for the day... 🌸',
+                    hintText: 'Plan for the day...',
+                    hintStyle: TextStyle(color: AppColors.textMuted),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.5),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+                    fillColor: AppColors.surface.withValues(alpha: 0.6),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
                 ),
@@ -163,19 +136,22 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryPink,
+                      backgroundColor: AppColors.gold,
+                      foregroundColor: AppColors.background,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       padding: const EdgeInsets.all(15),
-                      elevation: 4,
-                      shadowColor: AppTheme.primaryPink.withOpacity(0.5),
+                      elevation: 0,
                     ),
                     onPressed: () {
                       if (timeStr.isNotEmpty && titleController.text.isNotEmpty) {
-                        ref.read(scheduleNotifierProvider.notifier).addTask(timeStr, titleController.text.trim(), dateStr);
+                        ref
+                            .read(scheduleNotifierProvider.notifier)
+                            .addTask(timeStr, titleController.text.trim(), dateStr);
                         Navigator.pop(context);
                       }
                     },
-                    child: const Text('Save to Routine', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: const Text('Save to Routine',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 )
               ],
@@ -192,37 +168,19 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-        decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.primaryPink.withOpacity(0.2))),
-        child: Row(children: [Icon(icon, size: 18, color: AppTheme.primaryPink), const SizedBox(width: 8), Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700))]),
-      ),
-    );
-  }
-
-  // ✨ New Single Image Lulu Cat Widget ✨
-  Widget _buildLuluCat() {
-    return GestureDetector(
-      onTap: () => _handleCatPet('head', 'happy'),
-      onDoubleTap: () => _handleCatPet('body', 'happy'),
-      child: ScaleTransition(
-        scale: Tween<double>(begin: 0.97, end: 1.02).animate(
-          CurvedAnimation(parent: _catPulseController, curve: Curves.easeInOut),
+        decoration: BoxDecoration(
+          color: AppColors.surface.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.divider),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primaryPink.withOpacity(0.1),
-                blurRadius: 30,
-                spreadRadius: 2,
-              )
-            ],
-          ),
-          child: Image.asset(
-            'assets/lulu/lulu.png', // The beautiful static image
-            height: 160,
-            fit: BoxFit.contain,
-          ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: AppColors.gold),
+            const SizedBox(width: 8),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+          ],
         ),
       ),
     );
@@ -232,143 +190,331 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> with TickerProv
   Widget build(BuildContext context) {
     final tasks = ref.watch(scheduleNotifierProvider);
     final activeDate = ref.watch(selectedDateProvider);
-    bool isToday = DateFormat('yyyy-MM-dd').format(activeDate) == DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final userName = ref.watch(userNameProvider);
+    
+    bool isToday = DateFormat('yyyy-MM-dd').format(activeDate) ==
+        DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     return PremiumBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
+        
+        drawer: const PremiumDrawer(), // ✨ Drawer connected here
+        
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: const Text('My Routine 🌸',
-              style: TextStyle(fontFamily: 'serif', fontWeight: FontWeight.w800, color: AppTheme.textDark)),
           centerTitle: false,
-        ),
-        // ✨ FIX: Floating Action Button ko nav bar ke upar uthaya ✨
-        floatingActionButton: Padding(
-          padding: const EdgeInsets.only(bottom: 90.0), // 👈 Ye rahi jadoo wali padding
-          child: FloatingActionButton(
-            backgroundColor: AppTheme.primaryPink,
-            elevation: 6,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            onPressed: () => _showAddTaskSheet(context),
-            child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+          title: Text('My Routine', style: AppTextStyles.displayMedium),
+          
+          // ✨ Hamburger Icon added to open Drawer
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(CupertinoIcons.bars, color: AppColors.gold, size: 28),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
           ),
         ),
-        body: SafeArea(
+          
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 90.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 16, 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            isToday ? GreetingHelper.getGreeting() : 'Upcoming Plans',
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppTheme.primaryPink, letterSpacing: -1),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            DateFormat('EEEE, d MMMM').format(activeDate),
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textDark.withOpacity(0.55)),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "Tap Lulu pour un câlin 🐾",
-                            style: TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppTheme.textLight.withOpacity(0.7)),
-                          ),
-                        ],
+              // 1. Nour AI Avatar Button
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NourScreen()),
+                  );
+                },
+                child: Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.gold.withValues(alpha: 0.6), width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.gold.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
                       ),
+                    ],
+                    image: const DecorationImage(
+                      image: AssetImage('assets/icon/app_icon.png'),
+                      fit: BoxFit.cover,
                     ),
-
-                    // ✨ Lulu the cat 
-                    _buildLuluCat(),
-                  ],
+                  ),
                 ),
               ),
-
-              Expanded(
-                child: tasks.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(22),
-                              decoration: BoxDecoration(color: AppTheme.primaryPink.withOpacity(0.08), shape: BoxShape.circle),
-                              child: Icon(Icons.spa_outlined, size: 60, color: AppTheme.primaryPink.withOpacity(0.4)),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text('Your garden is empty.',
-                                textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.textDark, fontSize: 16)),
-                            const SizedBox(height: 4),
-                            Text('Tap Lulu or add a task to begin 🌸',
-                                textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.textLight.withOpacity(0.8), fontSize: 13)),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        // ✨ FIX: List ke end mein extra space daala taaki last task na dabe ✨
-                        padding: const EdgeInsets.fromLTRB(20, 6, 20, 120), // 👈 Ye raha 120px bottom margin
-                        itemCount: tasks.length,
-                        itemBuilder: (context, index) {
-                          final task = tasks[index];
-                          return Dismissible(
-                            key: Key(task.id.toString()),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 24),
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.7), borderRadius: BorderRadius.circular(20)),
-                              child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
-                            ),
-                            onDismissed: (dir) => ref.read(scheduleNotifierProvider.notifier).deleteTask(task.id!),
-                            child: GlassCard(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              opacity: 0.7,
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                leading: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  decoration: BoxDecoration(color: AppTheme.primaryPink.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                                  child: Text(task.time, style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.primaryPink, fontSize: 14)),
-                                ),
-                                title: Text(
-                                  task.title,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                                    color: task.isCompleted ? AppTheme.textLight : AppTheme.textDark,
-                                  ),
-                                ),
-                                trailing: Checkbox(
-                                  value: task.isCompleted,
-                                  activeColor: AppTheme.primaryPink,
-                                  shape: const CircleBorder(),
-                                  onChanged: (val) {
-                                    if (task.id != null) {
-                                      ref.read(scheduleNotifierProvider.notifier).toggleTaskStatus(task.id!, task.isCompleted);
-                                      if (!task.isCompleted) _handleCatPet('head', 'happy');
-                                    }
-                                  },
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+              const SizedBox(height: 16),
+              // 2. Add Routine Button
+              FloatingActionButton(
+                heroTag: 'add_task_fab',
+                backgroundColor: AppColors.gold,
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                onPressed: () => _showAddTaskSheet(context),
+                child: Icon(CupertinoIcons.add, color: AppColors.background, size: 28),
               ),
             ],
           ),
+        ),
+        
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.15,
+                child: Image.asset(
+                  'assets/images/islamic_bg.png',
+                  fit: BoxFit.cover,
+                  color: Colors.black.withValues(alpha: 0.5),
+                  colorBlendMode: BlendMode.darken,
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 16, 30),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isToday)
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0.0, end: 1.0),
+                            duration: const Duration(milliseconds: 1200),
+                            curve: Curves.easeOutCubic,
+                            builder: (context, value, child) {
+                              return Opacity(
+                                opacity: value,
+                                child: Transform.translate(
+                                  offset: Offset(0, 15 * (1 - value)),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'السلام عليكم',
+                                  style: AppTextStyles.displayLarge.copyWith(
+                                    fontSize: 42, 
+                                    color: AppColors.gold,
+                                    height: 1.1,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  userName.isNotEmpty ? 'Peace be upon you, $userName ✨' : 'Peace be upon you ✨',
+                                  style: AppTextStyles.bodyLarge.copyWith(
+                                    fontSize: 18,
+                                    color: Colors.white.withValues(alpha: 0.95),
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Text(
+                            'Upcoming Plans',
+                            style: AppTextStyles.displayLarge.copyWith(
+                                fontSize: 32, color: AppColors.gold),
+                          ),
+                        const SizedBox(height: 12),
+                        
+                        Row(
+                          children: [
+                            Icon(CupertinoIcons.calendar, size: 16, color: AppColors.textMuted),
+                            const SizedBox(width: 6),
+                            Text(
+                              DateFormat('EEEE, d MMMM').format(activeDate),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.textMuted,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: tasks.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(22),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceElevated.withValues(alpha: 0.5),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(CupertinoIcons.list_bullet,
+                                      size: 60, color: AppColors.gold.withValues(alpha: 0.4)),
+                                ),
+                                const SizedBox(height: 16),
+                                Text('Your routine is empty.',
+                                    textAlign: TextAlign.center, style: AppTextStyles.bodyLarge),
+                                const SizedBox(height: 6),
+                                Text('Tap the + to add a new task',
+                                    textAlign: TextAlign.center, style: AppTextStyles.bodyMedium),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.fromLTRB(20, 6, 20, 120),
+                            itemCount: tasks.length,
+                            itemBuilder: (context, index) {
+                              final task = tasks[index];
+
+                              return Dismissible(
+                                key: Key(task.id.toString()),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 24),
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.redAccent.withValues(alpha: 0.8),
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: const Icon(CupertinoIcons.delete, color: Colors.white, size: 28),
+                                ),
+                                onDismissed: (dir) =>
+                                    ref.read(scheduleNotifierProvider.notifier).deleteTask(task.id!),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  child: GlassCard(
+                                    padding: const EdgeInsets.all(20),
+                                    opacity: task.isCompleted ? 0.3 : 0.5,
+                                    child: Row(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () {
+                                            if (task.id != null) {
+                                              ref
+                                                  .read(scheduleNotifierProvider.notifier)
+                                                  .toggleTaskStatus(task.id!, task.isCompleted);
+                                            }
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: const Duration(milliseconds: 300),
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: task.isCompleted
+                                                  ? AppColors.gold
+                                                  : Colors.transparent,
+                                              borderRadius: BorderRadius.circular(10),
+                                              border: Border.all(
+                                                color: task.isCompleted
+                                                    ? AppColors.gold
+                                                    : AppColors.textMuted.withValues(alpha: 0.3),
+                                                width: 2,
+                                              ),
+                                              boxShadow: task.isCompleted
+                                                  ? [
+                                                      BoxShadow(
+                                                          color: AppColors.gold.withValues(alpha: 0.35),
+                                                          blurRadius: 8,
+                                                          offset: const Offset(0, 4))
+                                                    ]
+                                                  : [],
+                                            ),
+                                            child: task.isCompleted
+                                                ? Icon(Icons.check_rounded,
+                                                    color: AppColors.background, size: 20)
+                                                : null,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                task.title,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: task.isCompleted
+                                                      ? AppColors.textMuted
+                                                      : AppColors.textPrimary,
+                                                  decoration: task.isCompleted
+                                                      ? TextDecoration.lineThrough
+                                                      : null,
+                                                  decorationThickness: 2,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 10, vertical: 5),
+                                                decoration: BoxDecoration(
+                                                  color: task.isCompleted
+                                                      ? AppColors.textMuted.withValues(alpha: 0.08)
+                                                      : AppColors.gold.withValues(alpha: 0.15),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: task.isCompleted
+                                                        ? Colors.transparent
+                                                        : AppColors.gold.withValues(alpha: 0.3),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      CupertinoIcons.clock,
+                                                      size: 12,
+                                                      color: task.isCompleted
+                                                          ? AppColors.textMuted
+                                                          : AppColors.gold,
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Text(
+                                                      task.time,
+                                                      style: TextStyle(
+                                                        fontWeight: FontWeight.w800,
+                                                        color: task.isCompleted
+                                                            ? AppColors.textMuted
+                                                            : AppColors.goldLight,
+                                                        fontSize: 12,
+                                                        letterSpacing: 0.5,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,7 +1,6 @@
 name: nour_app
 description: "Nour - Personal Life Companion"
 publish_to: 'none'
-
 version: 1.0.0+1
 
 environment:
@@ -11,53 +10,80 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # UI & Design
+  # --- UI & Design ---
   cupertino_icons: ^1.0.8
   google_fonts: ^6.3.3
   flutter_svg: ^2.0.10+1
   percent_indicator: ^4.2.3
   lottie: ^3.1.2
+  page_flip: ^0.2.5
 
-  # State Management & Logic
+  # --- Core & State Management ---
   flutter_riverpod: ^2.6.1
   intl: ^0.19.0
+  flutter_dotenv: ^6.0.1
+  flutter_animate: ^4.5.0
 
-  # Storage & Database
+  # --- Local Storage & Database ---
   sqflite: ^2.4.2
-  path_provider: ^2.1.5
+  path_provider: ^2.1.6
   shared_preferences: ^2.5.5
+  flutter_cache_manager: ^3.3.2
 
-  # Hardware, Network & Features
-  flutter_local_notifications: ^17.2.4
-  audioplayers: ^6.7.1
-  http: ^1.2.0 # ✨ API se live time lane ke liye
+  # --- Services & APIs ---
+  http: ^1.6.0
   image_picker: ^1.2.2
-  record: ^6.2.1
-  local_auth: ^3.0.1
-  signature: ^6.3.0
   url_launcher: ^6.3.2
-  timezone: ^0.9.4 # ✨ ADDED: Exact Adhan timing ke liye bohot zaroori
+
+  # --- Audio & Media (For 99 Names, Sleep Audios) ---
+  audioplayers: ^6.7.1
+  
+  # --- Journal Features ---
+  record: ^6.2.1
+  signature: ^6.3.0
+  
+  # --- Prayer Times & Location ---
+  adhan: ^2.0.0
+  geolocator: ^13.0.4
+  # 🔥 UPDATED HERE TO FIX THE BUILD ERROR (Bina ^ ke) 🔥
+  permission_handler: 11.3.1
+
+  # --- Background Tasks & Notifications ---
+  flutter_local_notifications: ^17.2.4
+  timezone: ^0.9.4
+  flutter_timezone: ^5.0.1
+  workmanager: ^0.9.0
+
+  # --- Security (If you use App Lock/Journal Lock) ---
+  local_auth: ^3.0.1
+  flutter_compass: ^0.8.1
+  just_audio: ^0.10.6
+  
+  # --- Updates & New Features ---
+  scrollable_positioned_list: ^0.3.8
+  package_info_plus: ^10.2.2
+  dio: ^5.11.1
+  open_filex: ^4.7.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
-  flutter_launcher_icons: ^0.13.1 # ✨ Naya App Icon Package
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
-
   assets:
-    - assets/icon/ # ✨ Yahan teri icon file hogi
-    - assets/lulu/ # ✨ Lulu cat parts
-    - assets/audio/ # ✨ Saari Islamic audio files yahan se load hongi
-    - assets/images/ # ✨ ADDED: Bismillah PNG aur baaki nayi images ke liye
+    - assets/icon/
+    - assets/audio/
+    - assets/images/
+    - assets/data/
+    - .env
 
-# ✨ APP ICON CONFIGURATION ✨
-flutter_launcher_icons:
-  android: "launcher_icon"
+flutter_icons:
+  android: true
   ios: true
-  image_path: "assets/icon/app_icon.png" 
+  image_path: "assets/icon/app_icon.png"
   min_sdk_android: 21
   web:
     generate: true

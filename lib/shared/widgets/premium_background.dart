@@ -1,40 +1,60 @@
 import 'package:flutter/material.dart';
-// ✨ Naya helper import karna hai yahan
-import '../../../core/utils/cat_behavior_helper.dart'; 
+import '../../core/theme/app_theme.dart';
 
+/// PremiumBackground — layered dark-purple background with soft gold glow,
+/// evoking the "lit lantern at night" mood from the Ramadan reference,
+/// without literal lantern art assets.
 class PremiumBackground extends StatelessWidget {
   final Widget child;
-
   const PremiumBackground({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF0F5),
-        image: DecorationImage(
-          // ✨ Yahan purane CatHelper ki jagah CatBehaviorHelper likhna hai
-          image: NetworkImage(CatBehaviorHelper.getCatBackground()),
-          fit: BoxFit.cover,
-          opacity: 0.15, 
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withOpacity(0.4),
-              const Color(0xFFFFF0F5).withOpacity(0.6),
-              const Color(0xFFE6E6FA).withOpacity(0.4),
-            ],
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Base vertical gradient — deep purple-black
+        Container(
+          decoration: const BoxDecoration(
+            gradient: AppColors.backgroundGradient,
           ),
         ),
-        child: child,
-      ),
+
+        // Top-right warm gold glow (main light source)
+        Positioned(
+          top: -90,
+          right: -70,
+          child: Container(
+            width: 340,
+            height: 340,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppColors.heroGlow,
+            ),
+          ),
+        ),
+
+        // Bottom-left faint secondary glow — adds depth, keeps focus on gold
+        Positioned(
+          bottom: -110,
+          left: -90,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.goldMuted.withOpacity(0.10),
+                  AppColors.goldMuted.withOpacity(0.0),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        SafeArea(child: child),
+      ],
     );
   }
 }

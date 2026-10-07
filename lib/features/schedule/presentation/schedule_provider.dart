@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../data/schedule_repository.dart';
 import '../domain/schedule_model.dart';
+import '../../../core/services/notification_service.dart';
 
 final scheduleRepositoryProvider = Provider((ref) => ScheduleRepository());
 
@@ -27,9 +28,28 @@ class ScheduleNotifier extends StateNotifier<List<ScheduleModel>> {
 
   Future<void> loadTasks() async {
     final tasks = await _repository.getTasksForDate(_dateStr);
+    
+    // ✨ SMART CLEANER LOGIC (Auto-Delete Past Tasks)
+    final String todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    List<ScheduleModel> validTasks = [];
+
+    for (var task in tasks) {
+      // Agar task ki date aaj se purani hai (jaise kal ya parso ka task), 
+      // toh usko permanently database aur system se delete kar do.
+      if (task.date.compareTo(todayStr) < 0) {
+        if (task.id != null) {
+          await _repository.deleteTask(task.id!);
+          await NotificationService.cancelRoutineTask(task.id!);
+        }
+      } else {
+        // Agar task aaj ka hai ya future ka hai, toh usko list mein rakho
+        validTasks.add(task);
+      }
+    }
+
     // Time ke hisaab se tasks ko sort karenge (Subah wale pehle, raat wale baad mein)
-    tasks.sort((a, b) => a.time.compareTo(b.time));
-    state = tasks;
+    validTasks.sort((a, b) => a.time.compareTo(b.time));
+    state = validTasks;
   }
 
   Future<void> toggleTaskStatus(int id, bool currentStatus) async {
@@ -37,15 +57,19 @@ class ScheduleNotifier extends StateNotifier<List<ScheduleModel>> {
     await loadTasks();
   }
 
-  // ✨ Ab ye function us date par task save karega jo user ne select ki hai
+  // ✨ Ab ye function us date par task save karega aur NOTIFICATION bhi lagayega
   Future<void> addTask(String time, String title, String date) async {
     final newTask = ScheduleModel(time: time, title: title, date: date);
-    await _repository.insertTask(newTask);
+    
+    final insertedId = await _repository.insertTask(newTask); 
+    await NotificationService.scheduleRoutineTask(insertedId, title, time, date);
+
     await loadTasks();
   }
 
   Future<void> deleteTask(int id) async {
     await _repository.deleteTask(id);
+    await NotificationService.cancelRoutineTask(id); 
     await loadTasks();
   }
 }
